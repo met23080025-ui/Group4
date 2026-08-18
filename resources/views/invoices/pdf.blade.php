@@ -17,9 +17,11 @@ $money = fn ($value) => number_format((float) $value, 0, ',', '.').' đ';
         body { font-family: "DejaVu Sans", sans-serif; font-size: 12px; color: #1f2937; }
         h1 { font-size: 18px; margin: 0 0 4px; }
         .muted { color: #6b7280; }
-        .header { overflow: hidden; margin-bottom: 20px; }
-        .header .gym { float: left; width: 60%; }
-        .header .meta { float: right; width: 35%; text-align: right; }
+        /* Bảng thay vì float: DomPDF không clear float đáng tin cậy, từng làm
+           nội dung phía sau (vd. "Hội viên") bị vỡ dòng theo từng chữ. */
+        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .header-table td { border: none; padding: 0; vertical-align: top; }
+        .header-table .meta { text-align: right; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
         th, td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; text-align: left; }
         th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; color: #6b7280; }
@@ -29,22 +31,24 @@ $money = fn ($value) => number_format((float) $value, 0, ',', '.').' đ';
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="gym">
-            <h1>{{ $invoice->gym->name }}</h1>
-            @if ($invoice->gym->address)
-                <div class="muted">{{ $invoice->gym->address }}</div>
-            @endif
-            @if ($invoice->gym->phone)
-                <div class="muted">ĐT: {{ $invoice->gym->phone }}</div>
-            @endif
-        </div>
-        <div class="meta">
-            <h1>HÓA ĐƠN</h1>
-            <div>Số: <strong>{{ $invoice->invoice_number }}</strong></div>
-            <div class="muted">Ngày xuất: {{ $invoice->issued_at->format('d/m/Y H:i') }}</div>
-        </div>
-    </div>
+    <table class="header-table">
+        <tr>
+            <td style="width: 60%;">
+                <h1>{{ $invoice->gym->name }}</h1>
+                @if ($invoice->gym->address)
+                    <div class="muted">{{ $invoice->gym->address }}</div>
+                @endif
+                @if ($invoice->gym->phone)
+                    <div class="muted">ĐT: {{ $invoice->gym->phone }}</div>
+                @endif
+            </td>
+            <td class="meta" style="width: 40%;">
+                <h1>HÓA ĐƠN</h1>
+                <div>Số: <strong>{{ $invoice->invoice_number }}</strong></div>
+                <div class="muted">Ngày xuất: {{ $invoice->issued_at->format('d/m/Y H:i') }}</div>
+            </td>
+        </tr>
+    </table>
 
     <div class="section-title">Hội viên</div>
     <div>{{ $invoice->member->user->name }} ({{ $invoice->member->member_code }})</div>
