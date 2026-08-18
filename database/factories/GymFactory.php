@@ -20,6 +20,7 @@ class GymFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1000, 9999),
+            'code' => strtoupper(fake()->unique()->lexify('??')),
             'address' => fake()->address(),
             'phone' => fake()->phoneNumber(),
             'email' => fake()->companyEmail(),

@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
             $gym = Gym::factory()->create([
                 'name' => $def['name'],
                 'slug' => $def['slug'],
+                'code' => $def['code'],
                 'address' => $def['address'],
                 'phone' => '024'.fake()->numerify('#######'),
                 'email' => "contact@{$def['prefix']}.test",

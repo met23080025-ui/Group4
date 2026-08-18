@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'name', 'slug', 'address', 'phone', 'email', 'description',
+    'name', 'slug', 'code', 'address', 'phone', 'email', 'description',
     'logo_path', 'cover_path', 'opening_time', 'closing_time', 'is_active',
 ])]
 class Gym extends Model
