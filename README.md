@@ -9,7 +9,8 @@ GymHub là một nền tảng SaaS đa tenant (multi-tenant) cho phép nhiều p
 ## Tech stack
 
 - **Backend:** Laravel 13 (PHP 8.4), MySQL
-- **Frontend:** Blade, Tailwind CSS 4 (qua Vite) — không dùng Livewire/Inertia/Vue
+- **Frontend:** Blade, Tailwind CSS 3 (qua Vite), Alpine.js (dropdown/toggle) — không dùng Livewire/Inertia/Vue
+- **Auth scaffolding:** laravel/breeze (Blade stack) — tùy biến lại cho multi-tenant (redirect theo role, chặn tài khoản/gym bị vô hiệu hóa, chọn Gym khi đăng ký)
 - **PDF:** barryvdh/laravel-dompdf (hóa đơn)
 - **QR Code:** simplesoftwareio/simple-qrcode (thanh toán VietQR, check-in hội viên)
 - **Testing:** PHPUnit (Feature/Unit tests)
@@ -64,6 +65,30 @@ Mật khẩu của **mọi** tài khoản demo: `password`.
 `prefix` theo từng Gym: `fitzone` (FitZone Hoàn Kiếm), `powerhouse` (PowerHouse Hà Nội), `elite` (Elite Fitness).
 
 Mỗi Gym demo có sẵn: 1 owner, 2 staff, 3 trainer, 15 member, 4 package (1/3/6/12 tháng), 2 promotion. Chạy `php artisan migrate:fresh --seed` để tạo lại toàn bộ dữ liệu này bất kỳ lúc nào.
+
+## Authentication
+
+Đăng ký (chỉ dành cho Member, bắt buộc chọn Gym), đăng nhập, đăng xuất, quên mật khẩu, đặt lại mật khẩu, đổi mật khẩu, xác minh email (dùng `MAIL_MAILER=log` — kiểm tra link xác minh trong `storage/logs/laravel.log`).
+
+Sau khi đăng nhập, hệ thống điều hướng theo role:
+
+| Role | Điều hướng đến |
+|---|---|
+| `platform_admin` | `/admin` |
+| `gym_owner` | `/gym/dashboard` |
+| `staff` | `/staff/dashboard` |
+| `trainer` | `/trainer/dashboard` |
+| `member` | `/home` |
+
+Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. Các trang trên hiện là placeholder — dashboard đầy đủ theo role sẽ hoàn thiện ở các khối tiếp theo.
+
+## Authorization & Multi-Tenant Isolation
+
+- Middleware `role:...` chặn sai role bằng **403** (không redirect login). Middleware `tenant` share `$currentGym` cho branding, không dùng để chặn quyền.
+- Route được nhóm theo prefix: `/admin/*` (platform_admin), `/gym/*` (gym_owner, một số route mở thêm cho staff), `/staff/*`, `/trainer/*`, hội viên dùng `/home`.
+- Mọi model nghiệp vụ có `gym_id` đều tự động lọc theo Gym của user đăng nhập (global scope `BelongsToGym`) — truy cập ID thuộc Gym khác qua route model binding trả **404**, không phải lỗi server.
+- Policy (`MemberPolicy`, `PackagePolicy`, `MembershipPolicy`, `PaymentPolicy`, `SchedulePolicy`) kiểm tra cả role **và** gym_id ở tầng backend — không chỉ ẩn menu ở giao diện.
+- Bằng chứng: `tests/Feature/RoleAccessTest.php` và `tests/Feature/TenantScopeTest.php`.
 
 ## Tài liệu
 
