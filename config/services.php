@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'vietqr' => [
+        'bank_bin' => env('VIETQR_BANK_BIN'),
+        'account_no' => env('VIETQR_ACCOUNT_NO'),
+        'account_name' => env('VIETQR_ACCOUNT_NAME'),
+        'template' => env('VIETQR_TEMPLATE', 'compact2'),
+    ],
+
+    'invoice' => [
+        'prefix' => env('INVOICE_PREFIX', 'INV'),
+    ],
+
 ];

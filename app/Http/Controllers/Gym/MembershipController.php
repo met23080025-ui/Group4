@@ -73,6 +73,9 @@ class MembershipController extends Controller
 
         $membership->load(['member.user', 'package', 'promotion']);
 
-        return view('gym.memberships.show', ['membership' => $membership]);
+        return view('gym.memberships.show', [
+            'membership' => $membership,
+            'latestPayment' => $membership->payments()->latest()->first(),
+        ]);
     }
 }

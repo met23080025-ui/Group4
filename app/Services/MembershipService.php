@@ -16,8 +16,8 @@ use InvalidArgumentException;
  * toán): Member → Package → (tuỳ chọn) Promotion → Membership status=pending.
  *
  * QUAN TRỌNG: Service này KHÔNG BAO GIỜ tạo membership với status=active.
- * Việc active hóa chỉ xảy ra sau khi Payment được Staff/Admin xác nhận
- * (Ngày 2 — Khối Payment + VietQR). Xem TODO ở cuối method create().
+ * Việc active hóa chỉ xảy ra ở App\Services\PaymentService::confirm() (Khối 2,
+ * Ngày 2), sau khi Payment tương ứng được Staff/Admin xác nhận đã nhận tiền.
  */
 class MembershipService
 {
@@ -58,10 +58,9 @@ class MembershipService
                 $promotion->increment('used_count');
             }
 
-            // TODO (Ngày 2 — Khối Payment + VietQR): sau khi Payment của membership
-            // này được Staff/Admin xác nhận (payment.status = paid), cập nhật
-            // $membership->status = Membership::STATUS_ACTIVE trong 1 transaction
-            // cùng với việc tạo Invoice. KHÔNG active ở bất kỳ đâu khác.
+            // Active hóa CHỈ xảy ra ở PaymentService::confirm() (Khối 2, Ngày 2),
+            // sau khi Payment tương ứng được Staff/Admin xác nhận đã nhận tiền —
+            // KHÔNG active ở bất kỳ đâu khác.
 
             return $membership;
         });

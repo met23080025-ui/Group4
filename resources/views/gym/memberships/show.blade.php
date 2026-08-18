@@ -56,8 +56,16 @@
 
         @if ($membership->status === 'pending')
             <div class="mt-6 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm">
-                Membership đang chờ thanh toán. Chức năng thanh toán VietQR + xác nhận sẽ hoàn thiện ở Ngày 2 —
-                sau khi thanh toán được Staff/Admin xác nhận, membership này mới chuyển sang trạng thái "active".
+                @if ($latestPayment)
+                    Membership đang chờ thanh toán. Đã tạo thanh toán <strong>{{ $latestPayment->transaction_code }}</strong>.
+                    <a href="{{ route('gym.payments.show', $latestPayment) }}" class="underline font-medium">Xem QR &amp; trạng thái</a>.
+                @else
+                    Membership đang chờ thanh toán — chưa tạo yêu cầu thanh toán nào.
+                    <form method="POST" action="{{ route('gym.memberships.payment.store', $membership) }}" class="inline">
+                        @csrf
+                        <button type="submit" class="ml-1 underline font-medium">Tạo thanh toán (sinh QR VietQR)</button>
+                    </form>
+                @endif
             </div>
         @endif
     </div>

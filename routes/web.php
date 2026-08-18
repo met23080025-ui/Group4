@@ -4,6 +4,7 @@ use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
 use App\Http\Controllers\Gym\PackageController;
 use App\Http\Controllers\Gym\PromotionController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -78,7 +79,16 @@ Route::middleware(['auth', 'verified', 'tenant'])
                 Route::get('/', [MembershipController::class, 'index'])->name('index');
                 Route::get('/create', [MembershipController::class, 'create'])->name('create');
                 Route::post('/', [MembershipController::class, 'store'])->name('store');
+                Route::post('/{membership}/payment', [PaymentController::class, 'store'])->name('payment.store');
                 Route::get('/{membership}', [MembershipController::class, 'show'])->name('show');
+            });
+
+            // Thanh toán: Staff/Owner tạo QR, xem danh sách chờ, và xác nhận đã
+            // nhận tiền (Khối 2 — kích hoạt Membership + sinh Invoice, 1 transaction).
+            Route::prefix('payments')->name('gym.payments.')->group(function () {
+                Route::get('/', [PaymentController::class, 'index'])->name('index');
+                Route::post('/{payment}/confirm', [PaymentController::class, 'confirm'])->name('confirm');
+                Route::get('/{payment}', [PaymentController::class, 'show'])->name('show');
             });
         });
     });
@@ -100,6 +110,11 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:trainer'])
 // Hội viên.
 Route::middleware(['auth', 'verified', 'tenant', 'role:member'])->group(function () {
     Route::view('/home', 'placeholders.member')->name('member.home');
+
+    Route::prefix('payments')->name('member.payments.')->group(function () {
+        Route::get('/', [PaymentController::class, 'mine'])->name('index');
+        Route::get('/{payment}', [PaymentController::class, 'show'])->name('show');
+    });
 });
 
 Route::middleware(['auth', 'tenant'])->group(function () {
