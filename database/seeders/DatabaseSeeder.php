@@ -143,9 +143,8 @@ class DatabaseSeeder extends Seeder
             ];
 
             foreach (self::PACKAGE_DURATIONS_DAYS as $duration) {
-                Package::factory()->create([
+                Package::factory()->withDuration($duration)->create([
                     'gym_id' => $gym->id,
-                    'duration_days' => $duration,
                 ]);
             }
 
