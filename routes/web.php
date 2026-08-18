@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Gym\MemberController;
+use App\Http\Controllers\Gym\MembershipController;
+use App\Http\Controllers\Gym\PackageController;
+use App\Http\Controllers\Gym\PromotionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -31,11 +34,52 @@ Route::middleware(['auth', 'verified', 'tenant'])
             Route::view('/dashboard', 'placeholders.gym-owner')->name('gym.dashboard');
         });
 
-        // Quản lý hội viên: Owner + Staff (mục 3). Route khung để chứng minh
-        // tenant isolation (global scope 404 + policy 403) — CRUD đầy đủ ở Khối 7.
+        // Quản lý hội viên: Owner + Staff (mục 3). Route cụ thể (create/trashed)
+        // phải khai báo TRƯỚC route {member} để không bị hiểu nhầm thành ID.
+        Route::middleware('role:gym_owner,staff')
+            ->prefix('members')
+            ->name('gym.members.')
+            ->group(function () {
+                Route::get('/', [MemberController::class, 'index'])->name('index');
+                Route::get('/trashed', [MemberController::class, 'trashed'])->name('trashed');
+                Route::get('/create', [MemberController::class, 'create'])->name('create');
+                Route::post('/', [MemberController::class, 'store'])->name('store');
+                Route::post('/{member}/restore', [MemberController::class, 'restore'])->name('restore');
+                Route::get('/{member}', [MemberController::class, 'show'])->name('show');
+                Route::get('/{member}/edit', [MemberController::class, 'edit'])->name('edit');
+                Route::put('/{member}', [MemberController::class, 'update'])->name('update');
+                Route::delete('/{member}', [MemberController::class, 'destroy'])->name('destroy');
+            });
+
+        // Gói tập + khuyến mãi + membership: Owner + Staff (mục 3, mục 26).
         Route::middleware('role:gym_owner,staff')->group(function () {
-            Route::get('/members', [MemberController::class, 'index'])->name('gym.members.index');
-            Route::get('/members/{member}', [MemberController::class, 'show'])->name('gym.members.show');
+            Route::prefix('packages')->name('gym.packages.')->group(function () {
+                Route::get('/', [PackageController::class, 'index'])->name('index');
+                Route::get('/create', [PackageController::class, 'create'])->name('create');
+                Route::post('/', [PackageController::class, 'store'])->name('store');
+                Route::post('/{package}/promotions', [PackageController::class, 'attachPromotion'])->name('promotions.attach');
+                Route::delete('/{package}/promotions/{promotion}', [PackageController::class, 'detachPromotion'])->name('promotions.detach');
+                Route::get('/{package}', [PackageController::class, 'show'])->name('show');
+                Route::get('/{package}/edit', [PackageController::class, 'edit'])->name('edit');
+                Route::put('/{package}', [PackageController::class, 'update'])->name('update');
+                Route::delete('/{package}', [PackageController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::prefix('promotions')->name('gym.promotions.')->group(function () {
+                Route::get('/', [PromotionController::class, 'index'])->name('index');
+                Route::get('/create', [PromotionController::class, 'create'])->name('create');
+                Route::post('/', [PromotionController::class, 'store'])->name('store');
+                Route::get('/{promotion}/edit', [PromotionController::class, 'edit'])->name('edit');
+                Route::put('/{promotion}', [PromotionController::class, 'update'])->name('update');
+                Route::delete('/{promotion}', [PromotionController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::prefix('memberships')->name('gym.memberships.')->group(function () {
+                Route::get('/', [MembershipController::class, 'index'])->name('index');
+                Route::get('/create', [MembershipController::class, 'create'])->name('create');
+                Route::post('/', [MembershipController::class, 'store'])->name('store');
+                Route::get('/{membership}', [MembershipController::class, 'show'])->name('show');
+            });
         });
     });
 

@@ -42,9 +42,15 @@
                     @elseif ($user->role === \App\Models\User::ROLE_GYM_OWNER)
                         <a href="{{ url('/gym/dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan Gym</a>
                         <a href="{{ url('/gym/members') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hội viên</a>
+                        <a href="{{ url('/gym/packages') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Gói tập</a>
+                        <a href="{{ url('/gym/promotions') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Khuyến mãi</a>
+                        <a href="{{ url('/gym/memberships') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Membership</a>
                     @elseif ($user->role === \App\Models\User::ROLE_STAFF)
                         <a href="{{ url('/staff/dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan nhân viên</a>
                         <a href="{{ url('/gym/members') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hội viên</a>
+                        <a href="{{ url('/gym/packages') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Gói tập</a>
+                        <a href="{{ url('/gym/promotions') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Khuyến mãi</a>
+                        <a href="{{ url('/gym/memberships') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Membership</a>
                     @elseif ($user->role === \App\Models\User::ROLE_TRAINER)
                         <a href="{{ url('/trainer/dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan huấn luyện viên</a>
                     @else
