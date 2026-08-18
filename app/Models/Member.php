@@ -26,6 +26,14 @@ class Member extends Model
 
     public const STATUSES = [self::STATUS_ACTIVE, self::STATUS_EXPIRED, self::STATUS_BLOCKED];
 
+    public const GENDER_MALE = 'male';
+
+    public const GENDER_FEMALE = 'female';
+
+    public const GENDER_OTHER = 'other';
+
+    public const GENDERS = [self::GENDER_MALE, self::GENDER_FEMALE, self::GENDER_OTHER];
+
     protected function casts(): array
     {
         return [
