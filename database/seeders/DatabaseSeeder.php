@@ -6,6 +6,7 @@ use App\Models\Gym;
 use App\Models\Member;
 use App\Models\Package;
 use App\Models\Promotion;
+use App\Models\Schedule;
 use App\Models\Staff;
 use App\Models\Trainer;
 use App\Models\User;
@@ -20,6 +21,10 @@ class DatabaseSeeder extends Seeder
     private const MEMBERS_PER_GYM = 15;
 
     private const PROMOTIONS_PER_GYM = 2;
+
+    private const GROUP_CLASSES_PER_GYM = 4;
+
+    private const PT_SESSIONS_PER_GYM = 3;
 
     // Mỗi Gym có đủ 4 loại gói theo thời hạn cố định (thay vì random) để demo dễ so sánh.
     private const PACKAGE_DURATIONS_DAYS = [30, 90, 180, 365];
@@ -102,6 +107,7 @@ class DatabaseSeeder extends Seeder
                 $demoAccounts[] = ["Staff {$i} - {$def['name']}", $staffUser->email, 'password', 'staff', $def['name']];
             }
 
+            $trainers = [];
             for ($i = 1; $i <= self::TRAINERS_PER_GYM; $i++) {
                 $trainerUser = User::factory()->create([
                     'gym_id' => $gym->id,
@@ -110,7 +116,7 @@ class DatabaseSeeder extends Seeder
                     'email' => "trainer{$i}@{$def['prefix']}.test",
                 ]);
 
-                Trainer::factory()->create([
+                $trainers[] = Trainer::factory()->create([
                     'gym_id' => $gym->id,
                     'user_id' => $trainerUser->id,
                 ]);
@@ -154,6 +160,23 @@ class DatabaseSeeder extends Seeder
                     'code' => "{$def['code']}SALE{$i}",
                 ]);
             }
+
+            // Lớp nhóm (capacity>1, không đụng remaining_pt_sessions) và buổi PT
+            // 1-kèm-1 (capacity nhỏ, is_pt_session=true) — demo/test cả 2 nhánh
+            // của rule "chỉ buổi PT mới trừ remaining_pt_sessions" (Khối 4).
+            for ($i = 1; $i <= self::GROUP_CLASSES_PER_GYM; $i++) {
+                Schedule::factory()->create([
+                    'gym_id' => $gym->id,
+                    'trainer_id' => fake()->randomElement($trainers)->id,
+                ]);
+            }
+
+            for ($i = 1; $i <= self::PT_SESSIONS_PER_GYM; $i++) {
+                Schedule::factory()->ptSession()->create([
+                    'gym_id' => $gym->id,
+                    'trainer_id' => fake()->randomElement($trainers)->id,
+                ]);
+            }
         }
 
         $this->command->table(
@@ -165,7 +188,8 @@ class DatabaseSeeder extends Seeder
             'Đã seed: 1 platform admin, '.count(self::GYMS).' gym, mỗi gym 1 owner + '
             .self::STAFF_PER_GYM.' staff + '.self::TRAINERS_PER_GYM.' trainer + '
             .self::MEMBERS_PER_GYM.' member + '.count(self::PACKAGE_DURATIONS_DAYS).' package + '
-            .self::PROMOTIONS_PER_GYM.' promotion.'
+            .self::PROMOTIONS_PER_GYM.' promotion + '.self::GROUP_CLASSES_PER_GYM.' lớp nhóm + '
+            .self::PT_SESSIONS_PER_GYM.' buổi PT.'
         );
     }
 }

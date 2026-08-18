@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['gym_id', 'schedule_id', 'member_id', 'status', 'booked_at', 'cancelled_at'])]
+#[Fillable([
+    'gym_id', 'schedule_id', 'member_id', 'membership_id', 'status', 'booked_at', 'cancelled_at',
+])]
 class ClassBooking extends Model
 {
     use BelongsToGym, HasFactory;
@@ -17,9 +19,7 @@ class ClassBooking extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
-    public const STATUS_ATTENDED = 'attended';
-
-    public const STATUSES = [self::STATUS_BOOKED, self::STATUS_CANCELLED, self::STATUS_ATTENDED];
+    public const STATUSES = [self::STATUS_BOOKED, self::STATUS_CANCELLED];
 
     protected function casts(): array
     {
@@ -42,5 +42,10 @@ class ClassBooking extends Model
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);
+    }
+
+    public function membership(): BelongsTo
+    {
+        return $this->belongsTo(Membership::class);
     }
 }

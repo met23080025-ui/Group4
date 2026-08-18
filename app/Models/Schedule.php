@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'gym_id', 'trainer_id', 'title', 'description', 'class_date',
-    'start_time', 'end_time', 'capacity', 'status',
+    'start_time', 'end_time', 'capacity', 'status', 'is_pt_session',
 ])]
 class Schedule extends Model
 {
@@ -32,6 +32,7 @@ class Schedule extends Model
             'class_date' => 'date',
             'start_time' => 'datetime:H:i',
             'end_time' => 'datetime:H:i',
+            'is_pt_session' => 'boolean',
         ];
     }
 

@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\ClassBookingController;
 use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
 use App\Http\Controllers\Gym\PackageController;
 use App\Http\Controllers\Gym\PromotionController;
+use App\Http\Controllers\Gym\ScheduleController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
@@ -93,6 +95,17 @@ Route::middleware(['auth', 'verified', 'tenant'])
             });
 
             Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('gym.invoices.download');
+
+            // Lớp/lịch tập (mục 12): CRUD chỉ Owner/Staff, qua SchedulePolicy.
+            Route::prefix('schedules')->name('gym.schedules.')->group(function () {
+                Route::get('/', [ScheduleController::class, 'index'])->name('index');
+                Route::get('/create', [ScheduleController::class, 'create'])->name('create');
+                Route::post('/', [ScheduleController::class, 'store'])->name('store');
+                Route::get('/{schedule}', [ScheduleController::class, 'show'])->name('show');
+                Route::get('/{schedule}/edit', [ScheduleController::class, 'edit'])->name('edit');
+                Route::put('/{schedule}', [ScheduleController::class, 'update'])->name('update');
+                Route::delete('/{schedule}', [ScheduleController::class, 'destroy'])->name('destroy');
+            });
         });
     });
 
@@ -120,6 +133,18 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:member'])->group(function
     });
 
     Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('member.invoices.download');
+
+    // Lớp tập (mục 12): xem lớp sắp diễn ra của gym mình + đặt lớp.
+    Route::prefix('schedules')->name('member.schedules.')->group(function () {
+        Route::get('/', [ClassBookingController::class, 'index'])->name('index');
+        Route::post('/{schedule}/book', [ClassBookingController::class, 'store'])->name('book');
+    });
+
+    // Booking của chính mình: xem + huỷ.
+    Route::prefix('bookings')->name('member.bookings.')->group(function () {
+        Route::get('/', [ClassBookingController::class, 'mine'])->name('index');
+        Route::delete('/{booking}', [ClassBookingController::class, 'destroy'])->name('destroy');
+    });
 });
 
 Route::middleware(['auth', 'tenant'])->group(function () {
