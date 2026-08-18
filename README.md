@@ -80,15 +80,24 @@ Sau khi đăng nhập, hệ thống điều hướng theo role:
 | `trainer` | `/trainer/dashboard` |
 | `member` | `/home` |
 
-Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. Các trang trên hiện là placeholder — dashboard đầy đủ theo role sẽ hoàn thiện ở các khối tiếp theo.
+Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. Dashboard tổng quan theo role (`/admin`, `/staff/dashboard`, `/trainer/dashboard`, `/home`) hiện vẫn là placeholder — sẽ hoàn thiện ở Ngày 3. Riêng `/gym/*` đã có CRUD thật cho Hội viên, Gói tập, Khuyến mãi, Membership (xem bên dưới).
 
 ## Authorization & Multi-Tenant Isolation
 
 - Middleware `role:...` chặn sai role bằng **403** (không redirect login). Middleware `tenant` share `$currentGym` cho branding, không dùng để chặn quyền.
 - Route được nhóm theo prefix: `/admin/*` (platform_admin), `/gym/*` (gym_owner, một số route mở thêm cho staff), `/staff/*`, `/trainer/*`, hội viên dùng `/home`.
 - Mọi model nghiệp vụ có `gym_id` đều tự động lọc theo Gym của user đăng nhập (global scope `BelongsToGym`) — truy cập ID thuộc Gym khác qua route model binding trả **404**, không phải lỗi server.
-- Policy (`MemberPolicy`, `PackagePolicy`, `MembershipPolicy`, `PaymentPolicy`, `SchedulePolicy`) kiểm tra cả role **và** gym_id ở tầng backend — không chỉ ẩn menu ở giao diện.
-- Bằng chứng: `tests/Feature/RoleAccessTest.php` và `tests/Feature/TenantScopeTest.php`.
+- Policy (`MemberPolicy`, `PackagePolicy`, `PromotionPolicy`, `MembershipPolicy`, `PaymentPolicy`, `SchedulePolicy`) kiểm tra cả role **và** gym_id ở tầng backend — không chỉ ẩn menu ở giao diện.
+- Bằng chứng: `tests/Feature/RoleAccessTest.php`, `tests/Feature/TenantScopeTest.php`, `tests/Feature/MemberManagementTest.php`, `tests/Feature/MembershipCreationTest.php`.
+
+## Quản lý Gym (`/gym/*` — Owner + Staff)
+
+| Module | Tính năng |
+|---|---|
+| Hội viên (`/gym/members`) | CRUD, search (tên/email/mã HV/SĐT), filter (trạng thái, khoảng ngày tham gia), sort, soft-delete ("Vô hiệu hóa") + Thùng rác + khôi phục. `member_code` sinh tự động theo Gym (vd `FZ-0001`), an toàn khi nhiều request tạo đồng thời (row lock). |
+| Gói tập (`/gym/packages`) | CRUD, search theo tên, filter khoảng giá/thời hạn/trạng thái, sort theo giá, gán/gỡ Khuyến mãi cho từng gói. |
+| Khuyến mãi (`/gym/promotions`) | CRUD, discount theo % hoặc số tiền cố định, kiểm tra còn hiệu lực (ngày + trạng thái + lượt dùng) trước khi cho áp dụng. |
+| Membership (`/gym/memberships`) | Chọn Hội viên + Gói + Khuyến mãi (tuỳ chọn) → tự tính giá cuối cùng → tạo membership trạng thái **"chờ thanh toán"**. **Không** tự động kích hoạt — chỉ active sau khi thanh toán được xác nhận (Ngày 2). |
 
 ## Tài liệu
 
