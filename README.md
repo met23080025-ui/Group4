@@ -51,7 +51,19 @@ GymHub là một nền tảng SaaS đa tenant (multi-tenant) cho phép nhiều p
 
 ## Tài khoản demo
 
-Xem bảng tài khoản demo đầy đủ tại cuối `DatabaseSeeder` (in ra khi chạy `--seed`) — sẽ được cập nhật vào README sau khi hoàn thành Khối 4 (Ngày 1).
+Mật khẩu của **mọi** tài khoản demo: `password`.
+
+| Vai trò | Email pattern | Ví dụ |
+|---|---|---|
+| Platform Admin | `admin@gymhub.test` | `admin@gymhub.test` |
+| Chủ Gym | `owner@{prefix}.test` | `owner@fitzone.test` |
+| Staff (2/gym) | `staff{n}@{prefix}.test` | `staff1@fitzone.test`, `staff2@fitzone.test` |
+| Trainer (3/gym) | `trainer{n}@{prefix}.test` | `trainer1@fitzone.test` ... `trainer3@fitzone.test` |
+| Member (15/gym) | `member{n}@{prefix}.test` | `member1@fitzone.test` ... `member15@fitzone.test` |
+
+`prefix` theo từng Gym: `fitzone` (FitZone Hoàn Kiếm), `powerhouse` (PowerHouse Hà Nội), `elite` (Elite Fitness).
+
+Mỗi Gym demo có sẵn: 1 owner, 2 staff, 3 trainer, 15 member, 4 package (1/3/6/12 tháng), 2 promotion. Chạy `php artisan migrate:fresh --seed` để tạo lại toàn bộ dữ liệu này bất kỳ lúc nào.
 
 ## Tài liệu
 
