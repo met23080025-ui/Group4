@@ -110,7 +110,8 @@
                         Membership đã kích hoạt.</p>
                     @if ($payment->invoice)
                         <p class="mt-1">Hóa đơn: <strong>{{ $payment->invoice->invoice_number }}</strong>
-                            — {{ number_format($payment->invoice->total, 0, ',', '.') }} đ</p>
+                            — {{ number_format($payment->invoice->total, 0, ',', '.') }} đ
+                            — <a href="{{ route($isStaffView ? 'gym.invoices.download' : 'member.invoices.download', $payment->invoice) }}" class="underline hover:no-underline">Tải PDF</a></p>
                     @endif
                     @if ($payment->note)
                         <p class="mt-1 text-xs text-emerald-700">Ghi chú: {{ $payment->note }}</p>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
 use App\Http\Controllers\Gym\PackageController;
 use App\Http\Controllers\Gym\PromotionController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
@@ -90,6 +91,8 @@ Route::middleware(['auth', 'verified', 'tenant'])
                 Route::post('/{payment}/confirm', [PaymentController::class, 'confirm'])->name('confirm');
                 Route::get('/{payment}', [PaymentController::class, 'show'])->name('show');
             });
+
+            Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('gym.invoices.download');
         });
     });
 
@@ -115,6 +118,8 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:member'])->group(function
         Route::get('/', [PaymentController::class, 'mine'])->name('index');
         Route::get('/{payment}', [PaymentController::class, 'show'])->name('show');
     });
+
+    Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('member.invoices.download');
 });
 
 Route::middleware(['auth', 'tenant'])->group(function () {

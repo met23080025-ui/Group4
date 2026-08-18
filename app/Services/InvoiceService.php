@@ -6,6 +6,8 @@ use App\Models\Gym;
 use App\Models\Invoice;
 use App\Models\Membership;
 use App\Models\Payment;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 
 /**
@@ -32,6 +34,38 @@ class InvoiceService
             'discount' => $membership->discount_amount,
             'total' => $membership->final_price,
         ]);
+    }
+
+    /**
+     * Đảm bảo file PDF của Invoice tồn tại trên disk 'local' và trả về đường
+     * dẫn tương đối (đã lưu vào invoice.pdf_path). Sinh PDF một lần rồi tái sử
+     * dụng cho các lần tải sau — không render lại mỗi request.
+     */
+    public function ensureStored(Invoice $invoice): string
+    {
+        if ($invoice->pdf_path && Storage::disk('local')->exists($invoice->pdf_path)) {
+            return $invoice->pdf_path;
+        }
+
+        $path = "invoices/{$invoice->invoice_number}.pdf";
+
+        Storage::disk('local')->put($path, $this->render($invoice)->output());
+        $invoice->update(['pdf_path' => $path]);
+
+        return $path;
+    }
+
+    /**
+     * Render nội dung Invoice thành PDF. Font "DejaVu Sans" (đi kèm sẵn trong
+     * dompdf/dompdf) hỗ trợ đầy đủ Unicode tiếng Việt có dấu — bắt buộc dùng
+     * font này (hoặc font Unicode khác đã nhúng), font mặc định của DomPDF
+     * (Helvetica) KHÔNG hiển thị được dấu tiếng Việt.
+     */
+    private function render(Invoice $invoice): \Barryvdh\DomPDF\PDF
+    {
+        $invoice->loadMissing(['gym', 'member.user', 'payment.membership.package']);
+
+        return Pdf::loadView('invoices.pdf', ['invoice' => $invoice])->setPaper('a4');
     }
 
     /**
