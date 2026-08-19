@@ -80,7 +80,7 @@ Sau khi đăng nhập, hệ thống điều hướng theo role:
 | `trainer` | `/trainer/dashboard` |
 | `member` | `/home` |
 
-Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. `/admin`, `/staff/dashboard`, `/home` hiện vẫn là placeholder — sẽ hoàn thiện ở Ngày 3. `/trainer/dashboard` đã là dashboard thật (Ngày 2, xem mục PT bên dưới). `/gym/*` đã có CRUD thật cho Hội viên, Gói tập, Khuyến mãi, Membership, Thanh toán, Hóa đơn, Lịch tập, Check-in (xem bên dưới).
+Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. Cả 5 dashboard (`/admin`, `/gym/dashboard`, `/staff/dashboard`, `/trainer/dashboard`, `/home`) đều là dashboard thật với số liệu thật theo role (Ngày 3), scope đúng Gym cho Owner/Staff/Member, platform_admin thấy tổng hợp toàn nền tảng.
 
 ## Authorization & Multi-Tenant Isolation
 
@@ -121,9 +121,55 @@ Trainer có dashboard thật (`/trainer/dashboard`): lịch dạy hôm nay, lớ
 | Kế hoạch tập (`/members/{member}/workout-plans`) | Owner/Staff/Trainer (đã phân công) tạo plan + thêm bài tập (exercise/sets/reps...); Member chỉ xem. |
 | Kế hoạch dinh dưỡng (`/members/{member}/nutrition-plans`) | Tương tự kế hoạch tập, thêm bữa ăn (món/calo/protein/carb/fat...). |
 
+## Dashboard theo role + Báo cáo doanh thu (Ngày 3)
+
+Mỗi role có dashboard riêng, số liệu tính trực tiếp từ dữ liệu thật qua `DashboardService` — Owner/Staff/Member tự động scope theo Gym (model đã dùng `BelongsToGym`), platform_admin thấy tổng hợp toàn nền tảng (do `Gym`/`User` không scope theo gym — quyết định kiến trúc từ Ngày 1).
+
+| Role | Dashboard | Số liệu chính |
+|---|---|---|
+| Platform Admin | `/admin` | Tổng/active Gym, tổng user theo role; quản lý Gym tại `/admin/gyms` (kích hoạt/vô hiệu hóa) |
+| Gym Owner | `/gym/dashboard` | Tổng/active member, member chưa có gói còn hạn, doanh thu tháng này, membership mới, check-in hôm nay, thanh toán chờ, membership sắp hết hạn, thiết bị sắp bảo trì |
+| Staff | `/staff/dashboard` | Tập con của Owner: check-in hôm nay, thanh toán chờ, membership sắp hết hạn, thiết bị sắp bảo trì, lớp sắp tới |
+| Trainer | `/trainer/dashboard` | Lịch dạy hôm nay, lớp sắp tới, học viên được phân công, số buổi đã dạy |
+| Member | `/home` | Membership hiện tại + số ngày còn lại, lớp sắp tới, check-in tháng này, tiến trình cân nặng/BMI, điểm loyalty |
+
+**Báo cáo doanh thu** (`/gym/reports/revenue`, chỉ Owner): tính từ `invoices.total`, group theo tháng và theo gói (tính bằng PHP Collection, không dùng `DATE_FORMAT`/`strftime` để tránh khác biệt MySQL/SQLite), filter theo khoảng ngày `from`/`to`.
+
+## Cộng đồng, Thông báo, Đánh giá (Ngày 3)
+
+| Module | Tính năng |
+|---|---|
+| Cộng đồng (`/community`) | Feed bài viết theo Gym: Owner/Staff/Trainer đăng bài, Owner/Staff kiểm duyệt (sửa/xoá mọi bài + ghim announcement lên đầu feed), Trainer chỉ sửa/xoá bài của mình, Member bình luận + react (like/love/wow, bấm lại để gỡ). |
+| Thông báo (chuông ở mọi trang + `/notifications`) | Danh sách đọc/chưa đọc, đánh dấu từng cái/tất cả. 5 trigger tự động: thanh toán được xác nhận, đặt/huỷ lớp, có bình luận mới, có announcement mới, membership sắp hết hạn (lệnh `php artisan notifications:expiring-memberships`, tự chạy hàng ngày). |
+| Đánh giá (`/reviews`) | Member đánh giá Gym hoặc 1 Trainer cụ thể (1–5 sao + nhận xét), Owner/Staff ẩn/hiện đánh giá không phù hợp, Trainer chỉ xem đánh giá về chính mình. |
+
+## Thiết bị (Ngày 3, Owner/Staff)
+
+CRUD thiết bị (`/gym/equipment`) kèm chu kỳ bảo trì; ghi nhận 1 lần bảo trì (`EquipmentService::recordMaintenance()`) tự cập nhật `last_maintenance_at`/`next_maintenance_at` trong cùng 1 transaction. Dashboard Owner/Staff cảnh báo số thiết bị sắp đến hạn bảo trì (trong 14 ngày, bao gồm cả thiết bị đã quá hạn).
+
 ## Tài liệu
 
-Tài liệu phân tích, thiết kế (Use Case, Activity, Sequence Diagram, Database Schema, Data Dictionary, Test Cases) được đặt tại thư mục [`/docs`](./docs), viết bằng Mermaid.
+Tài liệu phân tích, thiết kế đầy đủ tại thư mục [`/docs`](./docs), viết bằng Mermaid (render trực tiếp trên GitHub), khớp 100% với code thật — không có nội dung suy diễn/dự kiến:
+
+| File | Nội dung |
+|---|---|
+| [`docs/database-schema.md`](./docs/database-schema.md) | ERD (`erDiagram`) đầy đủ 31 bảng nghiệp vụ + quan hệ, đánh dấu cột thêm ở Ngày 2 |
+| [`docs/data-dictionary.md`](./docs/data-dictionary.md) | Data Dictionary từng bảng: cột, kiểu, khóa, null, mô tả |
+| [`docs/use-case.md`](./docs/use-case.md) | Use Case Diagram + danh sách use case theo 5 actor |
+| [`docs/activity-diagram.md`](./docs/activity-diagram.md) | Activity Diagram workflow mục 26 (13 bước, mọi rẽ nhánh) |
+| [`docs/sequence-diagram.md`](./docs/sequence-diagram.md) | Sequence Diagram workflow mục 26 (lane Member/Staff/Controller/Service/DB/PDF) |
+| [`docs/test-cases.md`](./docs/test-cases.md) | Danh sách toàn bộ test class + số test + mục đích + kết quả 214/214 pass |
+| [`docs/day2-workflow-notes.md`](./docs/day2-workflow-notes.md) | Ghi chú gốc 13 bước workflow (nguyên liệu dựng 2 diagram ở trên) |
+
+## Chạy test
+
+```powershell
+php artisan test                          # toàn bộ suite
+php artisan test --filter=TenantIsolationTest   # 1 class cụ thể
+php artisan test --testdox                # in tên từng test thay vì dấu chấm
+```
+
+Suite dùng SQLite in-memory (`phpunit.xml`, không đụng tới database `gymhub` thật trên MySQL) và `RefreshDatabase` — mỗi test chạy trên schema fresh, độc lập hoàn toàn. Kết quả hiện tại: **214/214 PASS**, chi tiết từng class ở [`docs/test-cases.md`](./docs/test-cases.md).
 
 ## Tiến độ phát triển
 
@@ -131,4 +177,4 @@ Xem [`CHANGELOG.md`](./CHANGELOG.md) để theo dõi tiến độ theo từng ng
 
 ## AI Tool Declaration
 
-Dự án được phát triển với sự hỗ trợ của Claude (Anthropic) trong vai trò trợ lý lập trình — hỗ trợ phân tích yêu cầu, thiết kế kiến trúc, viết code, viết tài liệu và test. Toàn bộ quyết định kiến trúc và nghiệp vụ được người thực hiện đồ án xem xét và phê duyệt.
+Dự án được phát triển với sự hỗ trợ của Claude (Anthropic, qua Claude Code CLI) trong vai trò trợ lý lập trình xuyên suốt cả 3 ngày — hỗ trợ phân tích yêu cầu, thiết kế kiến trúc (multi-tenant scope, atomic transaction, thiết kế token QR ký HMAC...), viết code (Controller/Service/Policy/Migration/View), viết test tự động, rà soát bảo mật, và biên soạn toàn bộ tài liệu trong `/docs` + `CHANGELOG.md` + README này. Một số quyết định kiến trúc do AI đề xuất được ghi chú trực tiếp trong code (dạng comment giải thích "vì sao") để minh bạch nguồn gốc. Toàn bộ quyết định kiến trúc và nghiệp vụ cuối cùng được người thực hiện đồ án xem xét, kiểm thử qua HTTP thật, và phê duyệt trước khi commit — AI không tự ý push code lên remote trong suốt quá trình làm việc.
