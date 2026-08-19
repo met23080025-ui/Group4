@@ -41,6 +41,10 @@ class Member extends Model
             'joined_at' => 'date',
             'height' => 'decimal:2',
             'weight' => 'decimal:2',
+            // Khóa bí mật ký token QR check-in (Khối 5) — không phải dữ liệu
+            // nghiệp vụ nhập từ form nên KHÔNG có trong #[Fillable] phía trên,
+            // chỉ được set qua forceFill() trong AttendanceService.
+            'qr_secret' => 'encrypted',
         ];
     }
 

@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\ClassBookingController;
+use App\Http\Controllers\Gym\AttendanceController;
 use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
 use App\Http\Controllers\Gym\PackageController;
 use App\Http\Controllers\Gym\PromotionController;
 use App\Http\Controllers\Gym\ScheduleController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MemberQrController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
@@ -106,6 +108,12 @@ Route::middleware(['auth', 'verified', 'tenant'])
                 Route::put('/{schedule}', [ScheduleController::class, 'update'])->name('update');
                 Route::delete('/{schedule}', [ScheduleController::class, 'destroy'])->name('destroy');
             });
+
+            // QR check-in (mục 6): Staff/Owner nhập/quét token QR của hội viên.
+            Route::prefix('checkin')->name('gym.checkin.')->group(function () {
+                Route::get('/', [AttendanceController::class, 'index'])->name('index');
+                Route::post('/', [AttendanceController::class, 'store'])->name('store');
+            });
         });
     });
 
@@ -133,6 +141,9 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:member'])->group(function
     });
 
     Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('member.invoices.download');
+
+    // QR check-in của chính mình (mục 6): Staff/Owner quét mã này để check-in.
+    Route::get('/qr', [MemberQrController::class, 'show'])->name('member.qr.show');
 
     // Lớp tập (mục 12): xem lớp sắp diễn ra của gym mình + đặt lớp.
     Route::prefix('schedules')->name('member.schedules.')->group(function () {
