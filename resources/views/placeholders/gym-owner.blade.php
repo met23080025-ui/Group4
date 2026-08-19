@@ -12,6 +12,7 @@
 
         <div class="mt-4 flex flex-wrap gap-4 text-sm border-t border-gray-100 pt-4">
             <a href="{{ route('community.index') }}" class="text-indigo-600 hover:text-indigo-900">Cộng đồng Gym &rarr;</a>
+            <a href="{{ route('reviews.index') }}" class="text-indigo-600 hover:text-indigo-900">Đánh giá &rarr;</a>
         </div>
     </div>
 </x-app-layout>

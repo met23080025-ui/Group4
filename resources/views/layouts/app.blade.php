@@ -93,6 +93,39 @@
 
                 <div class="flex items-center gap-4">
                     @auth
+                        {{-- Chuông thông báo (Khối 2, Ngày 3) --}}
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" type="button" class="relative p-2 rounded-full text-gray-500 hover:bg-gray-100" aria-label="Thông báo">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                @if ($unreadNotificationsCount > 0)
+                                    <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
+                                        {{ $unreadNotificationsCount > 9 ? '9+' : $unreadNotificationsCount }}
+                                    </span>
+                                @endif
+                            </button>
+                            <div
+                                x-show="open"
+                                x-cloak
+                                @click.outside="open = false"
+                                class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
+                            >
+                                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Thông báo gần đây</div>
+                                @forelse ($recentNotifications as $notification)
+                                    <div class="px-4 py-2 border-t border-gray-50 {{ $notification->read_at ? '' : 'bg-indigo-50/40' }}">
+                                        <div class="text-sm text-gray-900 font-medium">{{ $notification->title }}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">{{ $notification->created_at->diffForHumans() }}</div>
+                                    </div>
+                                @empty
+                                    <div class="px-4 py-3 text-sm text-gray-500">Chưa có thông báo nào.</div>
+                                @endforelse
+                                <a href="{{ route('notifications.index') }}" class="block text-center border-t border-gray-100 px-4 py-2 text-sm text-indigo-600 hover:bg-gray-50">
+                                    Xem tất cả
+                                </a>
+                            </div>
+                        </div>
+
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" type="button" class="flex items-center gap-2 text-sm">
                                 <div class="h-9 w-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-semibold">

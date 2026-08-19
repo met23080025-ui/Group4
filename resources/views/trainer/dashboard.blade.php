@@ -81,7 +81,8 @@
         </table>
     </div>
 
-    <div class="mt-4 text-sm">
+    <div class="mt-4 text-sm space-x-4">
         <a href="{{ route('community.index') }}" class="text-indigo-600 hover:text-indigo-900">Cộng đồng Gym &rarr;</a>
+        <a href="{{ route('reviews.index') }}" class="text-indigo-600 hover:text-indigo-900">Đánh giá về tôi &rarr;</a>
     </div>
 </x-app-layout>

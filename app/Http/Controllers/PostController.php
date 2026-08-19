@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
+use App\Models\Notification;
 use App\Models\Post;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -15,6 +17,8 @@ use Illuminate\View\View;
  */
 class PostController extends Controller
 {
+    public function __construct(private readonly NotificationService $notificationService) {}
+
     public function index(): View
     {
         $this->authorize('viewAny', Post::class);
@@ -30,10 +34,23 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request): RedirectResponse
     {
-        Post::create($request->validated() + [
+        $post = Post::create($request->validated() + [
             'user_id' => $request->user()->id,
             'published_at' => now(),
         ]);
+
+        // Trigger "announcement mới" (mục 2, Ngày 3): báo cho mọi user khác
+        // trong Gym (broadcast) khi đăng loại thông báo chính thức.
+        if ($post->type === Post::TYPE_ANNOUNCEMENT && $request->user()->gym) {
+            $this->notificationService->notifyGymUsers(
+                $request->user()->gym,
+                Notification::TYPE_NEW_ANNOUNCEMENT,
+                'Thông báo mới từ Gym',
+                $post->content,
+                ['post_id' => $post->id],
+                exceptUserId: $request->user()->id,
+            );
+        }
 
         return redirect()->route('community.index')->with('success', 'Đã đăng bài.');
     }

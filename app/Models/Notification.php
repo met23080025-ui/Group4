@@ -19,6 +19,8 @@ class Notification extends Model
 
     public const TYPE_INVOICE_GENERATED = 'invoice_generated';
 
+    public const TYPE_CLASS_BOOKED = 'class_booked';
+
     public const TYPE_CLASS_REMINDER = 'class_reminder';
 
     public const TYPE_CLASS_CANCELLED = 'class_cancelled';

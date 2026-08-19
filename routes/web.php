@@ -11,11 +11,13 @@ use App\Http\Controllers\Gym\PromotionController;
 use App\Http\Controllers\Gym\ScheduleController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MemberQrController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NutritionPlanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\WorkoutPlanController;
 use Illuminate\Support\Facades\Auth;
@@ -172,6 +174,14 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Notification (Khối 2, Ngày 3): hoàn toàn cá nhân, mọi role đăng nhập đều
+// dùng chung — NotificationPolicy chỉ cho chính chủ xem/đánh dấu đã đọc.
+Route::middleware(['auth', 'verified', 'tenant'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('read-all');
+    Route::post('/{notification}/read', [NotificationController::class, 'markRead'])->name('read');
+});
+
 // Body measurement + workout/nutrition plan (Khối 6): dùng chung cho Owner/
 // Staff/Trainer(đã phân công)/Member(chỉ xem) — Policy phân định quyền theo
 // vai trò, KHÔNG theo route middleware (route model binding {member} đã tự
@@ -214,5 +224,17 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:gym_owner,staff,trainer,m
 Route::middleware(['auth', 'verified', 'tenant', 'role:gym_owner,staff,trainer,member'])
     ->delete('/comments/{comment}', [CommentController::class, 'destroy'])
     ->name('comments.destroy');
+
+// Review/Rating (Khối 2, Ngày 3): Member viết review Gym/Trainer, Owner/Staff
+// kiểm duyệt (ẩn/hiện), Trainer chỉ thấy review về mình — phân định ở
+// ReviewController::index() (query) + ReviewPolicy (create/moderate).
+Route::middleware(['auth', 'verified', 'tenant', 'role:gym_owner,staff,trainer,member'])
+    ->prefix('reviews')
+    ->name('reviews.')
+    ->group(function () {
+        Route::get('/', [ReviewController::class, 'index'])->name('index');
+        Route::post('/', [ReviewController::class, 'store'])->name('store');
+        Route::post('/{review}/toggle-visibility', [ReviewController::class, 'toggleVisibility'])->name('toggle-visibility');
+    });
 
 require __DIR__.'/auth.php';

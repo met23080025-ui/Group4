@@ -6,6 +6,7 @@ use App\Exceptions\CrossTenantOperationException;
 use App\Models\ClassBooking;
 use App\Models\Member;
 use App\Models\Membership;
+use App\Models\Notification;
 use App\Models\Schedule;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -17,6 +18,8 @@ use InvalidArgumentException;
  */
 class ClassBookingService
 {
+    public function __construct(private readonly NotificationService $notificationService) {}
+
     /**
      * Thứ tự khóa CỐ ĐỊNH để tránh deadlock giữa các request đồng thời:
      * Schedule -> Member -> Membership. Mọi luồng gọi book() đều khóa theo
@@ -76,7 +79,7 @@ class ClassBookingService
                 $membership->decrement('remaining_pt_sessions');
             }
 
-            return ClassBooking::create([
+            $booking = ClassBooking::create([
                 'gym_id' => $lockedSchedule->gym_id,
                 'schedule_id' => $lockedSchedule->id,
                 'member_id' => $lockedMember->id,
@@ -84,6 +87,16 @@ class ClassBookingService
                 'status' => ClassBooking::STATUS_BOOKED,
                 'booked_at' => now(),
             ]);
+
+            $this->notificationService->notify(
+                $lockedMember->user,
+                Notification::TYPE_CLASS_BOOKED,
+                'Đã đặt lớp thành công',
+                "Bạn đã đặt \"{$lockedSchedule->title}\" vào {$lockedSchedule->class_date->format('d/m/Y')}, {$lockedSchedule->start_time->format('H:i')}.",
+                ['schedule_id' => $lockedSchedule->id, 'booking_id' => $booking->id],
+            );
+
+            return $booking;
         });
     }
 
@@ -114,6 +127,18 @@ class ClassBookingService
                     ->whereKey($locked->membership_id)
                     ->lockForUpdate()
                     ->increment('remaining_pt_sessions');
+            }
+
+            $member = Member::query()->withoutGlobalScope('gym')->find($locked->member_id);
+
+            if ($member?->user) {
+                $this->notificationService->notify(
+                    $member->user,
+                    Notification::TYPE_CLASS_CANCELLED,
+                    'Đã huỷ đặt lớp',
+                    $schedule ? "Bạn đã huỷ đặt \"{$schedule->title}\" ngày {$schedule->class_date->format('d/m/Y')}." : 'Booking đã được huỷ.',
+                    ['schedule_id' => $locked->schedule_id, 'booking_id' => $locked->id],
+                );
             }
 
             return $locked->fresh();
