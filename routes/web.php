@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BodyMeasurementController;
 use App\Http\Controllers\ClassBookingController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Gym\AttendanceController;
 use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
@@ -12,7 +13,9 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MemberQrController;
 use App\Http\Controllers\NutritionPlanController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\WorkoutPlanController;
 use Illuminate\Support\Facades\Auth;
@@ -189,5 +192,27 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::post('/workout-plans/{workoutPlan}/items', [WorkoutPlanController::class, 'storeItem'])->name('workout-plans.items.store');
     Route::post('/nutrition-plans/{nutritionPlan}/items', [NutritionPlanController::class, 'storeItem'])->name('nutrition-plans.items.store');
 });
+
+// Community feed (Khối 1, Ngày 3): Owner/Staff/Trainer/Member — không có
+// platform_admin vì feed gắn với 1 Gym cụ thể, platform_admin không thuộc
+// Gym nào. PostPolicy/CommentPolicy/ReactionPolicy phân định đúng quyền
+// theo từng action (đăng bài, sửa/xoá, ghim, comment, react).
+Route::middleware(['auth', 'verified', 'tenant', 'role:gym_owner,staff,trainer,member'])
+    ->prefix('community')
+    ->name('community.')
+    ->group(function () {
+        Route::get('/', [PostController::class, 'index'])->name('index');
+        Route::post('/', [PostController::class, 'store'])->name('store');
+        Route::put('/{post}', [PostController::class, 'update'])->name('update');
+        Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
+        Route::post('/{post}/pin', [PostController::class, 'pin'])->name('pin');
+
+        Route::post('/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+        Route::post('/{post}/reactions', [ReactionController::class, 'store'])->name('reactions.store');
+    });
+
+Route::middleware(['auth', 'verified', 'tenant', 'role:gym_owner,staff,trainer,member'])
+    ->delete('/comments/{comment}', [CommentController::class, 'destroy'])
+    ->name('comments.destroy');
 
 require __DIR__.'/auth.php';

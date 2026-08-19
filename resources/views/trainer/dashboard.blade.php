@@ -80,4 +80,8 @@
             </tbody>
         </table>
     </div>
+
+    <div class="mt-4 text-sm">
+        <a href="{{ route('community.index') }}" class="text-indigo-600 hover:text-indigo-900">Cộng đồng Gym &rarr;</a>
+    </div>
 </x-app-layout>

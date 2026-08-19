@@ -16,6 +16,7 @@
                 <a href="{{ route('members.measurements.index', auth()->user()->member) }}" class="text-indigo-600 hover:text-indigo-900">Chỉ số cơ thể của tôi &rarr;</a>
                 <a href="{{ route('members.workout-plans.index', auth()->user()->member) }}" class="text-indigo-600 hover:text-indigo-900">Kế hoạch tập của tôi &rarr;</a>
                 <a href="{{ route('members.nutrition-plans.index', auth()->user()->member) }}" class="text-indigo-600 hover:text-indigo-900">Dinh dưỡng của tôi &rarr;</a>
+                <a href="{{ route('community.index') }}" class="text-indigo-600 hover:text-indigo-900">Cộng đồng Gym &rarr;</a>
             </div>
         @endif
     </div>
