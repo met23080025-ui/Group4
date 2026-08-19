@@ -80,24 +80,46 @@ Sau khi đăng nhập, hệ thống điều hướng theo role:
 | `trainer` | `/trainer/dashboard` |
 | `member` | `/home` |
 
-Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. Dashboard tổng quan theo role (`/admin`, `/staff/dashboard`, `/trainer/dashboard`, `/home`) hiện vẫn là placeholder — sẽ hoàn thiện ở Ngày 3. Riêng `/gym/*` đã có CRUD thật cho Hội viên, Gói tập, Khuyến mãi, Membership (xem bên dưới).
+Tài khoản bị vô hiệu hóa (`is_active=false`) hoặc thuộc Gym đang tạm ngưng sẽ bị chặn đăng nhập với thông báo tiếng Việt. `/admin`, `/staff/dashboard`, `/home` hiện vẫn là placeholder — sẽ hoàn thiện ở Ngày 3. `/trainer/dashboard` đã là dashboard thật (Ngày 2, xem mục PT bên dưới). `/gym/*` đã có CRUD thật cho Hội viên, Gói tập, Khuyến mãi, Membership, Thanh toán, Hóa đơn, Lịch tập, Check-in (xem bên dưới).
 
 ## Authorization & Multi-Tenant Isolation
 
 - Middleware `role:...` chặn sai role bằng **403** (không redirect login). Middleware `tenant` share `$currentGym` cho branding, không dùng để chặn quyền.
 - Route được nhóm theo prefix: `/admin/*` (platform_admin), `/gym/*` (gym_owner, một số route mở thêm cho staff), `/staff/*`, `/trainer/*`, hội viên dùng `/home`.
 - Mọi model nghiệp vụ có `gym_id` đều tự động lọc theo Gym của user đăng nhập (global scope `BelongsToGym`) — truy cập ID thuộc Gym khác qua route model binding trả **404**, không phải lỗi server.
-- Policy (`MemberPolicy`, `PackagePolicy`, `PromotionPolicy`, `MembershipPolicy`, `PaymentPolicy`, `SchedulePolicy`) kiểm tra cả role **và** gym_id ở tầng backend — không chỉ ẩn menu ở giao diện.
-- Bằng chứng: `tests/Feature/RoleAccessTest.php`, `tests/Feature/TenantScopeTest.php`, `tests/Feature/MemberManagementTest.php`, `tests/Feature/MembershipCreationTest.php`.
+- Policy (`MemberPolicy`, `PackagePolicy`, `PromotionPolicy`, `MembershipPolicy`, `PaymentPolicy`, `InvoicePolicy`, `SchedulePolicy`, `ClassBookingPolicy`, `AttendancePolicy`, `BodyMeasurementPolicy`, `WorkoutPlanPolicy`, `NutritionPlanPolicy`) kiểm tra cả role **và** gym_id ở tầng backend — không chỉ ẩn menu ở giao diện. Riêng nhóm "coaching" (body measurement, workout/nutrition plan) còn thêm 1 lớp lọc theo `trainer_id` (`MemberPolicy::coach()`): Trainer chỉ thao tác được trên hội viên **đã được phân công** cho chính mình, không phải mọi hội viên cùng Gym như Owner/Staff.
+- Bằng chứng: `tests/Feature/RoleAccessTest.php`, `tests/Feature/TenantScopeTest.php`, `tests/Feature/MemberManagementTest.php`, `tests/Feature/MembershipCreationTest.php`, `tests/Feature/TrainerAssignmentTest.php`, `tests/Feature/CoreWorkflowEndToEndTest.php` (chạy trọn workflow thanh toán → check-in trong 1 test).
 
 ## Quản lý Gym (`/gym/*` — Owner + Staff)
 
 | Module | Tính năng |
 |---|---|
-| Hội viên (`/gym/members`) | CRUD, search (tên/email/mã HV/SĐT), filter (trạng thái, khoảng ngày tham gia), sort, soft-delete ("Vô hiệu hóa") + Thùng rác + khôi phục. `member_code` sinh tự động theo Gym (vd `FZ-0001`), an toàn khi nhiều request tạo đồng thời (row lock). |
+| Hội viên (`/gym/members`) | CRUD, search (tên/email/mã HV/SĐT), filter (trạng thái, khoảng ngày tham gia), sort, soft-delete ("Vô hiệu hóa") + Thùng rác + khôi phục. `member_code` sinh tự động theo Gym (vd `FZ-0001`), an toàn khi nhiều request tạo đồng thời (row lock). Gán/gỡ **PT phụ trách chính** cho từng hội viên ngay tại trang chi tiết. |
 | Gói tập (`/gym/packages`) | CRUD, search theo tên, filter khoảng giá/thời hạn/trạng thái, sort theo giá, gán/gỡ Khuyến mãi cho từng gói. |
 | Khuyến mãi (`/gym/promotions`) | CRUD, discount theo % hoặc số tiền cố định, kiểm tra còn hiệu lực (ngày + trạng thái + lượt dùng) trước khi cho áp dụng. |
-| Membership (`/gym/memberships`) | Chọn Hội viên + Gói + Khuyến mãi (tuỳ chọn) → tự tính giá cuối cùng → tạo membership trạng thái **"chờ thanh toán"**. **Không** tự động kích hoạt — chỉ active sau khi thanh toán được xác nhận (Ngày 2). |
+| Membership (`/gym/memberships`) | Chọn Hội viên + Gói + Khuyến mãi (tuỳ chọn) → tự tính giá cuối cùng (bcmath) → tạo membership trạng thái **"chờ thanh toán"**. |
+| Thanh toán (`/gym/payments`) | Tạo QR VietQR (ảnh động từ `img.vietqr.io`, nhúng sẵn số tiền + nội dung CK) cho 1 membership pending; xác nhận đã nhận tiền → **atomic**: Membership active, Invoice sinh ra, Notification gửi cho hội viên (tất cả trong 1 transaction, rollback toàn bộ nếu bất kỳ bước nào lỗi). |
+| Hóa đơn (`/gym/invoices/{id}/download`) | Xuất PDF (DomPDF, font DejaVu Sans hỗ trợ tiếng Việt có dấu), sinh 1 lần rồi tái sử dụng, tải được bởi cả Staff/Owner và chính Member liên quan. |
+| Lịch tập (`/gym/schedules`) | CRUD lớp nhóm + buổi PT 1-kèm-1 (`is_pt_session`), kiểm soát capacity không giảm dưới số đã đặt. |
+| Check-in (`/gym/checkin`) | Nhập/quét token QR của hội viên để check-in — chặn hội viên bị khóa, membership hết hạn, check-in trùng ngày, token thuộc Gym khác; hợp lệ thì cộng +10 điểm loyalty. Xem mục [QR check-in](#qr-check-in--loyalty) bên dưới. |
+
+## Đặt lớp + Thanh toán + Hóa đơn (Member, `/schedules`, `/payments`, `/invoices`)
+
+Member xem lớp sắp diễn ra của Gym mình và đặt chỗ (chặn: chưa có membership active còn hạn, hết chỗ, trùng khung giờ, đã đặt lớp này rồi; buổi PT trừ đúng `remaining_pt_sessions`, huỷ thì hoàn lại). Xem thanh toán + tải hóa đơn PDF của chính mình.
+
+## QR check-in + Loyalty
+
+Member xem mã QR check-in của riêng mình tại `/qr` (`simplesoftwareio/simple-qrcode`). QR mã hóa một **token đã ký** (`base64(member_id . '|' . HMAC-SHA256(member_id, qr_secret))`), **không phải ID trần và không chứa SĐT/tên** — `qr_secret` là khóa ngẫu nhiên riêng từng member, không rời server; server verify bằng `hash_equals`. Check-in hợp lệ cộng tự động +10 điểm loyalty (`loyalty_point_transactions`); module Loyalty đầy đủ (đổi điểm lấy quà...) vẫn thuộc nhóm COULD, chưa build.
+
+## PT / Trainer (`/trainer/*`, `/members/{member}/...`)
+
+Trainer có dashboard thật (`/trainer/dashboard`): lịch dạy hôm nay, lớp sắp tới, danh sách học viên **được phân công**, số buổi đã dạy. Trainer chỉ xem/ghi được dữ liệu (chỉ số cơ thể, kế hoạch tập, kế hoạch dinh dưỡng) của hội viên đã được Owner/Staff gán cho chính mình — không phải mọi hội viên cùng Gym.
+
+| Module | Tính năng |
+|---|---|
+| Chỉ số cơ thể (`/members/{member}/measurements`) | Member/Trainer/Staff/Owner nhập height/weight/body_fat_percent/muscle_mass, tự tính BMI, lưu lịch sử đầy đủ. |
+| Kế hoạch tập (`/members/{member}/workout-plans`) | Owner/Staff/Trainer (đã phân công) tạo plan + thêm bài tập (exercise/sets/reps...); Member chỉ xem. |
+| Kế hoạch dinh dưỡng (`/members/{member}/nutrition-plans`) | Tương tự kế hoạch tập, thêm bữa ăn (món/calo/protein/carb/fat...). |
 
 ## Tài liệu
 
