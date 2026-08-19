@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Attendance;
 use App\Models\ClassBooking;
+use App\Models\Equipment;
 use App\Models\Gym;
 use App\Models\Invoice;
 use App\Models\Member;
@@ -55,6 +56,7 @@ class DashboardService
                 ->whereDate('end_date', '>=', $today)
                 ->whereDate('end_date', '<=', $expiringLimit)
                 ->count(),
+            'equipment_due_for_maintenance' => $this->equipmentDueForMaintenanceCount(),
         ];
     }
 
@@ -76,7 +78,21 @@ class DashboardService
                 ->where('status', Schedule::STATUS_SCHEDULED)
                 ->orderBy('class_date')->orderBy('start_time')
                 ->limit(5)->get(),
+            'equipment_due_for_maintenance' => $this->equipmentDueForMaintenanceCount(),
         ];
+    }
+
+    /**
+     * "Sắp đến lịch bảo trì" (Khối 4, Ngày 3) = next_maintenance_at trong
+     * vòng $daysAhead ngày tới, TÍNH CẢ thiết bị đã quá hạn (next_maintenance_at
+     * <= hôm nay) — quá hạn càng cần hiển thị cảnh báo, không phải lọc bỏ.
+     */
+    public function equipmentDueForMaintenanceCount(int $daysAhead = 14): int
+    {
+        return Equipment::query()
+            ->whereNotNull('next_maintenance_at')
+            ->whereDate('next_maintenance_at', '<=', now()->addDays($daysAhead)->toDateString())
+            ->count();
     }
 
     // Gym/User KHÔNG dùng BelongsToGym (đây chính là root tenant + quyết định

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Tổng quan nhân viên</x-slot>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <div class="text-sm text-gray-500">Check-in hôm nay</div>
             <div class="mt-1 text-2xl font-semibold text-gray-900">{{ $checkins_today }}</div>
@@ -13,6 +13,10 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <div class="text-sm text-gray-500">Membership sắp hết hạn (7 ngày)</div>
             <div class="mt-1 text-2xl font-semibold text-gray-900">{{ $expiring_memberships }}</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <div class="text-sm text-gray-500">Thiết bị sắp đến lịch bảo trì (14 ngày)</div>
+            <div class="mt-1 text-2xl font-semibold {{ $equipment_due_for_maintenance > 0 ? 'text-amber-600' : 'text-gray-900' }}">{{ $equipment_due_for_maintenance }}</div>
         </div>
     </div>
 
@@ -35,6 +39,7 @@
     <div class="flex flex-wrap gap-4 text-sm">
         <a href="{{ route('gym.checkin.index') }}" class="text-indigo-600 hover:text-indigo-900">Check-in &rarr;</a>
         <a href="{{ route('gym.payments.index') }}" class="text-indigo-600 hover:text-indigo-900">Thanh toán chờ &rarr;</a>
+        <a href="{{ route('gym.equipment.index') }}" class="text-indigo-600 hover:text-indigo-900">Thiết bị &rarr;</a>
         <a href="{{ route('community.index') }}" class="text-indigo-600 hover:text-indigo-900">Cộng đồng Gym &rarr;</a>
         <a href="{{ route('reviews.index') }}" class="text-indigo-600 hover:text-indigo-900">Đánh giá &rarr;</a>
     </div>

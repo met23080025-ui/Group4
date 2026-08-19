@@ -34,6 +34,10 @@
             <div class="text-sm text-gray-500">Membership sắp hết hạn (7 ngày)</div>
             <div class="mt-1 text-2xl font-semibold text-gray-900">{{ $expiring_memberships }}</div>
         </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <div class="text-sm text-gray-500">Thiết bị sắp đến lịch bảo trì (14 ngày)</div>
+            <div class="mt-1 text-2xl font-semibold {{ $equipment_due_for_maintenance > 0 ? 'text-amber-600' : 'text-gray-900' }}">{{ $equipment_due_for_maintenance }}</div>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto mb-6">
@@ -54,6 +58,7 @@
 
     <div class="flex flex-wrap gap-4 text-sm">
         <a href="{{ route('gym.reports.revenue') }}" class="text-indigo-600 hover:text-indigo-900">Báo cáo doanh thu &rarr;</a>
+        <a href="{{ route('gym.equipment.index') }}" class="text-indigo-600 hover:text-indigo-900">Thiết bị &rarr;</a>
         <a href="{{ route('community.index') }}" class="text-indigo-600 hover:text-indigo-900">Cộng đồng Gym &rarr;</a>
         <a href="{{ route('reviews.index') }}" class="text-indigo-600 hover:text-indigo-900">Đánh giá &rarr;</a>
     </div>

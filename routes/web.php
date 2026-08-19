@@ -7,6 +7,7 @@ use App\Http\Controllers\ClassBookingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Gym\AttendanceController;
 use App\Http\Controllers\Gym\DashboardController as GymDashboardController;
+use App\Http\Controllers\Gym\EquipmentController;
 use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
 use App\Http\Controllers\Gym\PackageController;
@@ -138,6 +139,18 @@ Route::middleware(['auth', 'verified', 'tenant'])
             Route::prefix('checkin')->name('gym.checkin.')->group(function () {
                 Route::get('/', [AttendanceController::class, 'index'])->name('index');
                 Route::post('/', [AttendanceController::class, 'store'])->name('store');
+            });
+
+            // Equipment + maintenance (Khối 4, Ngày 3): CRUD Owner/Staff, scope gym_id.
+            Route::prefix('equipment')->name('gym.equipment.')->group(function () {
+                Route::get('/', [EquipmentController::class, 'index'])->name('index');
+                Route::get('/create', [EquipmentController::class, 'create'])->name('create');
+                Route::post('/', [EquipmentController::class, 'store'])->name('store');
+                Route::get('/{equipment}', [EquipmentController::class, 'show'])->name('show');
+                Route::get('/{equipment}/edit', [EquipmentController::class, 'edit'])->name('edit');
+                Route::put('/{equipment}', [EquipmentController::class, 'update'])->name('update');
+                Route::delete('/{equipment}', [EquipmentController::class, 'destroy'])->name('destroy');
+                Route::post('/{equipment}/maintenance', [EquipmentController::class, 'storeMaintenance'])->name('maintenance.store');
             });
         });
     });
