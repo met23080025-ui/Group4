@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BodyMeasurementController;
 use App\Http\Controllers\ClassBookingController;
 use App\Http\Controllers\Gym\AttendanceController;
 use App\Http\Controllers\Gym\MemberController;
@@ -9,8 +10,11 @@ use App\Http\Controllers\Gym\PromotionController;
 use App\Http\Controllers\Gym\ScheduleController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MemberQrController;
+use App\Http\Controllers\NutritionPlanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TrainerController;
+use App\Http\Controllers\WorkoutPlanController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +55,7 @@ Route::middleware(['auth', 'verified', 'tenant'])
                 Route::get('/create', [MemberController::class, 'create'])->name('create');
                 Route::post('/', [MemberController::class, 'store'])->name('store');
                 Route::post('/{member}/restore', [MemberController::class, 'restore'])->name('restore');
+                Route::post('/{member}/assign-trainer', [MemberController::class, 'assignTrainer'])->name('assign-trainer');
                 Route::get('/{member}', [MemberController::class, 'show'])->name('show');
                 Route::get('/{member}/edit', [MemberController::class, 'edit'])->name('edit');
                 Route::put('/{member}', [MemberController::class, 'update'])->name('update');
@@ -128,7 +133,7 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:staff'])
 Route::middleware(['auth', 'verified', 'tenant', 'role:trainer'])
     ->prefix('trainer')
     ->group(function () {
-        Route::view('/dashboard', 'placeholders.trainer')->name('trainer.dashboard');
+        Route::get('/dashboard', [TrainerController::class, 'dashboard'])->name('trainer.dashboard');
     });
 
 // Hội viên.
@@ -162,6 +167,27 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Body measurement + workout/nutrition plan (Khối 6): dùng chung cho Owner/
+// Staff/Trainer(đã phân công)/Member(chỉ xem) — Policy phân định quyền theo
+// vai trò, KHÔNG theo route middleware (route model binding {member} đã tự
+// trả 404 cross-tenant qua global scope BelongsToGym; cross-trainer bị chặn
+// ở tầng Policy, xem BodyMeasurementPolicy/WorkoutPlanPolicy/NutritionPlanPolicy).
+Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
+    Route::prefix('members/{member}')->name('members.')->group(function () {
+        Route::get('/measurements', [BodyMeasurementController::class, 'index'])->name('measurements.index');
+        Route::post('/measurements', [BodyMeasurementController::class, 'store'])->name('measurements.store');
+
+        Route::get('/workout-plans', [WorkoutPlanController::class, 'index'])->name('workout-plans.index');
+        Route::post('/workout-plans', [WorkoutPlanController::class, 'store'])->name('workout-plans.store');
+
+        Route::get('/nutrition-plans', [NutritionPlanController::class, 'index'])->name('nutrition-plans.index');
+        Route::post('/nutrition-plans', [NutritionPlanController::class, 'store'])->name('nutrition-plans.store');
+    });
+
+    Route::post('/workout-plans/{workoutPlan}/items', [WorkoutPlanController::class, 'storeItem'])->name('workout-plans.items.store');
+    Route::post('/nutrition-plans/{nutritionPlan}/items', [NutritionPlanController::class, 'storeItem'])->name('nutrition-plans.items.store');
 });
 
 require __DIR__.'/auth.php';

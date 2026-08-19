@@ -79,6 +79,29 @@
                 ])>{{ $member->status }}</span>
             </div>
 
+            {{-- PT phụ trách (Khối 6) --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-3">PT phụ trách</h3>
+                <p class="text-sm text-gray-700 mb-3">
+                    {{ $member->trainer?->user->name ?? 'Chưa gán PT.' }}
+                </p>
+                <form method="POST" action="{{ route('gym.members.assign-trainer', $member) }}" class="flex items-center gap-2">
+                    @csrf
+                    <select name="trainer_id" class="rounded-md border-gray-300 text-sm flex-1">
+                        <option value="">— Không gán —</option>
+                        @foreach ($trainers as $trainer)
+                            <option value="{{ $trainer->id }}" @selected($member->trainer_id === $trainer->id)>{{ $trainer->user->name }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="rounded-md bg-white border border-gray-300 px-3 py-2 text-gray-700 text-sm hover:bg-gray-50">Gán</button>
+                </form>
+                <div class="mt-4 flex flex-col gap-1 text-sm">
+                    <a href="{{ route('members.measurements.index', $member) }}" class="text-indigo-600 hover:text-indigo-900">Chỉ số cơ thể &rarr;</a>
+                    <a href="{{ route('members.workout-plans.index', $member) }}" class="text-indigo-600 hover:text-indigo-900">Kế hoạch tập &rarr;</a>
+                    <a href="{{ route('members.nutrition-plans.index', $member) }}" class="text-indigo-600 hover:text-indigo-900">Kế hoạch dinh dưỡng &rarr;</a>
+                </div>
+            </div>
+
             {{-- Membership: dữ liệu thật ở Khối 8 (Ngày 2). Hiển thị an toàn khi chưa có gói nào. --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                 <h3 class="text-base font-semibold text-gray-900 mb-3">Membership hiện tại</h3>

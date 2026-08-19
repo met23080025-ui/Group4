@@ -52,4 +52,18 @@ class MemberPolicy
     {
         return $this->delete($user, $member);
     }
+
+    /**
+     * Trainer chỉ "huấn luyện" (xem hồ sơ, ghi body measurement, tạo
+     * workout/nutrition plan) được member ĐÃ ĐƯỢC PHÂN CÔNG cho chính mình
+     * (Khối 6) — tách biệt với view()/update() ở trên (đó là quyền quản trị
+     * hồ sơ member, chỉ dành cho Owner/Staff). sameGym() không đủ ở đây vì
+     * còn phải khớp đúng trainer_id, không phải chỉ cùng Gym.
+     */
+    public function coach(User $user, Member $member): bool
+    {
+        return $user->role === User::ROLE_TRAINER
+            && $user->trainer !== null
+            && $member->trainer_id === $user->trainer->id;
+    }
 }

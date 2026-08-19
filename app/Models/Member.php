@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'gym_id', 'user_id', 'member_code', 'date_of_birth', 'gender', 'address',
+    'gym_id', 'user_id', 'trainer_id', 'member_code', 'date_of_birth', 'gender', 'address',
     'emergency_contact', 'height', 'weight', 'status', 'joined_at', 'notes',
 ])]
 class Member extends Model
@@ -56,6 +56,12 @@ class Member extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    // PT phụ trách chính (Khối 6) — nullable, có thể chưa gán.
+    public function trainer(): BelongsTo
+    {
+        return $this->belongsTo(Trainer::class);
     }
 
     public function memberships(): HasMany

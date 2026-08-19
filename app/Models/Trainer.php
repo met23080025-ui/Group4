@@ -38,6 +38,12 @@ class Trainer extends Model
         return $this->hasMany(Schedule::class);
     }
 
+    // Học viên được phân công cho trainer này (Khối 6).
+    public function assignedMembers(): HasMany
+    {
+        return $this->hasMany(Member::class, 'trainer_id');
+    }
+
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

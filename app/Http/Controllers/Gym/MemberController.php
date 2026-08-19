@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Gym;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Member\AssignTrainerRequest;
 use App\Http\Requests\Member\StoreMemberRequest;
 use App\Http\Requests\Member\UpdateMemberRequest;
 use App\Models\Gym;
 use App\Models\Member;
+use App\Models\Trainer;
 use App\Services\MemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,12 +65,13 @@ class MemberController extends Controller
     {
         $this->authorize('view', $member);
 
-        $member->load('user');
+        $member->load(['user', 'trainer.user']);
 
         return view('gym.members.show', [
             'member' => $member,
             'currentMembership' => $member->currentMembership(),
             'latestBodyMeasurement' => $member->bodyMeasurements()->latest('measured_at')->first(),
+            'trainers' => Trainer::query()->where('is_active', true)->with('user')->orderBy('id')->get(),
         ]);
     }
 
@@ -88,6 +91,22 @@ class MemberController extends Controller
         return redirect()
             ->route('gym.members.show', $member)
             ->with('success', 'Đã cập nhật thông tin hội viên.');
+    }
+
+    /**
+     * Gán/gỡ PT phụ trách chính (Khối 6) — tách khỏi update() thường vì đây
+     * là 1 thao tác nhanh, riêng biệt (dropdown chọn trainer), không đi qua
+     * toàn bộ form sửa hồ sơ member.
+     */
+    public function assignTrainer(AssignTrainerRequest $request, Member $member): RedirectResponse
+    {
+        $member->update(['trainer_id' => $request->validated('trainer_id')]);
+
+        return redirect()
+            ->route('gym.members.show', $member)
+            ->with('success', $request->validated('trainer_id')
+                ? 'Đã gán PT phụ trách cho hội viên.'
+                : 'Đã gỡ PT phụ trách của hội viên.');
     }
 
     public function destroy(Member $member): RedirectResponse
