@@ -1,15 +1,20 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GymController as AdminGymController;
 use App\Http\Controllers\BodyMeasurementController;
 use App\Http\Controllers\ClassBookingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Gym\AttendanceController;
+use App\Http\Controllers\Gym\DashboardController as GymDashboardController;
 use App\Http\Controllers\Gym\MemberController;
 use App\Http\Controllers\Gym\MembershipController;
 use App\Http\Controllers\Gym\PackageController;
 use App\Http\Controllers\Gym\PromotionController;
+use App\Http\Controllers\Gym\ReportController;
 use App\Http\Controllers\Gym\ScheduleController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\MemberQrController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NutritionPlanController;
@@ -18,6 +23,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\WorkoutPlanController;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +44,13 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified', 'tenant', 'role:platform_admin'])
     ->prefix('admin')
     ->group(function () {
-        Route::view('/', 'placeholders.admin')->name('admin.dashboard');
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+        // Quản lý Gym cấp platform (mục 1, Ngày 3): danh sách + kích hoạt/vô hiệu hóa.
+        Route::prefix('gyms')->name('admin.gyms.')->group(function () {
+            Route::get('/', [AdminGymController::class, 'index'])->name('index');
+            Route::post('/{gym}/toggle-active', [AdminGymController::class, 'toggleActive'])->name('toggle-active');
+        });
     });
 
 // /gym/* — Chủ Gym (một số route mở rộng thêm cho Staff, khai báo role riêng theo từng nhóm con).
@@ -46,7 +58,10 @@ Route::middleware(['auth', 'verified', 'tenant'])
     ->prefix('gym')
     ->group(function () {
         Route::middleware('role:gym_owner')->group(function () {
-            Route::view('/dashboard', 'placeholders.gym-owner')->name('gym.dashboard');
+            Route::get('/dashboard', [GymDashboardController::class, 'index'])->name('gym.dashboard');
+
+            // Báo cáo doanh thu (mục 20, Ngày 3): chỉ Owner, theo tháng/gói, filter khoảng ngày.
+            Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('gym.reports.revenue');
         });
 
         // Quản lý hội viên: Owner + Staff (mục 3). Route cụ thể (create/trashed)
@@ -131,7 +146,7 @@ Route::middleware(['auth', 'verified', 'tenant'])
 Route::middleware(['auth', 'verified', 'tenant', 'role:staff'])
     ->prefix('staff')
     ->group(function () {
-        Route::view('/dashboard', 'placeholders.staff')->name('staff.dashboard');
+        Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('staff.dashboard');
     });
 
 // /trainer/* — Huấn luyện viên.
@@ -143,7 +158,7 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:trainer'])
 
 // Hội viên.
 Route::middleware(['auth', 'verified', 'tenant', 'role:member'])->group(function () {
-    Route::view('/home', 'placeholders.member')->name('member.home');
+    Route::get('/home', [MemberDashboardController::class, 'index'])->name('member.home');
 
     Route::prefix('payments')->name('member.payments.')->group(function () {
         Route::get('/', [PaymentController::class, 'mine'])->name('index');
