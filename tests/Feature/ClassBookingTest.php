@@ -137,6 +137,22 @@ class ClassBookingTest extends TestCase
         $this->assertSame($this->memberA->id, $booking->member_id);
     }
 
+    // Regression: membership bắt đầu ĐÚNG HÔM NAY vẫn phải hợp lệ để đặt lớp
+    // (bug: so sánh chuỗi start_date thay vì whereDate từng làm rớt case này
+    // trên SQLite, phát hiện qua CoreWorkflowEndToEndTest — đã sửa).
+    public function test_member_with_membership_starting_today_can_book(): void
+    {
+        $schedule = $this->groupClass();
+        $this->activeMembership($this->memberA, 4, [
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(30)->toDateString(),
+        ]);
+
+        $booking = app(ClassBookingService::class)->book($this->memberA, $schedule);
+
+        $this->assertSame(ClassBooking::STATUS_BOOKED, $booking->status);
+    }
+
     // Rule: không vượt capacity (khóa dòng Schedule để tuần tự hóa khi 2 người
     // đặt chỗ cuối gần đồng thời).
     public function test_cannot_book_beyond_capacity(): void

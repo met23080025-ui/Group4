@@ -166,6 +166,12 @@ class ClassBookingService
      * tra end_date (chỉ dựa status=active, có thể đã hết hạn nhưng chưa có
      * job nào chuyển sang expired). Khóa dòng Membership khi là buổi PT vì
      * bước sau sẽ decrement remaining_pt_sessions.
+     *
+     * whereDate() (không phải where() so trực tiếp chuỗi) — SQLite (dùng khi
+     * test) lưu cột 'date' cast dạng "Y-m-d 00:00:00" đầy đủ, nên 1 membership
+     * bắt đầu ĐÚNG HÔM NAY sẽ so sánh chuỗi "Y-m-d 00:00:00" <= "Y-m-d" ra
+     * FALSE dù cùng ngày (phát hiện qua CoreWorkflowEndToEndTest ở
+     * AttendanceService::hasValidMembership — cùng 1 lỗi, sửa luôn ở đây).
      */
     private function findActiveValidMembership(Member $member, bool $lockForPtDecrement): ?Membership
     {
@@ -174,8 +180,8 @@ class ClassBookingService
         $query = Membership::query()
             ->where('member_id', $member->id)
             ->where('status', Membership::STATUS_ACTIVE)
-            ->where('start_date', '<=', $today)
-            ->where('end_date', '>=', $today)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
             ->latest('end_date');
 
         if ($lockForPtDecrement) {

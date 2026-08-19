@@ -166,6 +166,22 @@ class AttendanceCheckInTest extends TestCase
         ]);
     }
 
+    // Regression: membership bắt đầu ĐÚNG HÔM NAY vẫn phải hợp lệ để check-in
+    // (bug: so sánh chuỗi start_date thay vì whereDate từng làm rớt case này
+    // trên SQLite, phát hiện qua CoreWorkflowEndToEndTest — đã sửa).
+    public function test_member_with_membership_starting_today_can_check_in(): void
+    {
+        $this->activeMembership($this->memberA, [
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(30)->toDateString(),
+        ]);
+        $token = $this->tokenFor($this->memberA);
+
+        $attendance = app(AttendanceService::class)->checkIn($token, $this->staffA);
+
+        $this->assertSame($this->memberA->id, $attendance->member_id);
+    }
+
     // Rule: không check-in trùng trong cùng 1 ngày (unique gym_id+member_id+check_in_date).
     public function test_cannot_check_in_twice_on_the_same_day(): void
     {

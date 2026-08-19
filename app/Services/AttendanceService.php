@@ -209,12 +209,18 @@ class AttendanceService
     {
         $today = now()->toDateString();
 
+        // whereDate() (không phải where() so trực tiếp chuỗi) — cùng lý do đã
+        // ghi ở pre-check check_in_date bên trên: SQLite lưu cột 'date' cast
+        // dạng "Y-m-d 00:00:00" đầy đủ, nên start_date của 1 membership bắt
+        // đầu ĐÚNG HÔM NAY sẽ so sánh chuỗi "Y-m-d 00:00:00" <= "Y-m-d" ra
+        // FALSE dù cùng ngày (phát hiện qua CoreWorkflowEndToEndTest — bug
+        // giống hệt lỗi đã sửa ở Attendance::check_in_date, chỉ khác chỗ).
         return Membership::query()
             ->withoutGlobalScope('gym')
             ->where('member_id', $member->id)
             ->where('status', Membership::STATUS_ACTIVE)
-            ->where('start_date', '<=', $today)
-            ->where('end_date', '>=', $today)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
             ->exists();
     }
 
