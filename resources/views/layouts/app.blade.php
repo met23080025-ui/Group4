@@ -39,25 +39,49 @@
 
                     @if ($user->role === \App\Models\User::ROLE_PLATFORM_ADMIN)
                         <a href="{{ url('/admin') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan nền tảng</a>
+                        <a href="{{ route('admin.gyms.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Quản lý Gym</a>
                     @elseif ($user->role === \App\Models\User::ROLE_GYM_OWNER)
                         <a href="{{ url('/gym/dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan Gym</a>
-                        <a href="{{ url('/gym/members') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hội viên</a>
-                        <a href="{{ url('/gym/packages') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Gói tập</a>
-                        <a href="{{ url('/gym/promotions') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Khuyến mãi</a>
-                        <a href="{{ url('/gym/memberships') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Membership</a>
-                        <a href="{{ url('/gym/payments') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thanh toán</a>
+                        <a href="{{ route('gym.members.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hội viên</a>
+                        <a href="{{ route('gym.packages.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Gói tập</a>
+                        <a href="{{ route('gym.promotions.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Khuyến mãi</a>
+                        <a href="{{ route('gym.memberships.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Membership</a>
+                        <a href="{{ route('gym.payments.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thanh toán</a>
+                        <a href="{{ route('gym.schedules.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Lịch tập</a>
+                        <a href="{{ route('gym.checkin.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Check-in</a>
+                        <a href="{{ route('gym.equipment.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thiết bị</a>
+                        <a href="{{ route('gym.reports.revenue') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Báo cáo doanh thu</a>
+                        <a href="{{ route('community.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Cộng đồng</a>
+                        <a href="{{ route('reviews.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Đánh giá</a>
                     @elseif ($user->role === \App\Models\User::ROLE_STAFF)
                         <a href="{{ url('/staff/dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan nhân viên</a>
-                        <a href="{{ url('/gym/members') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hội viên</a>
-                        <a href="{{ url('/gym/packages') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Gói tập</a>
-                        <a href="{{ url('/gym/promotions') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Khuyến mãi</a>
-                        <a href="{{ url('/gym/memberships') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Membership</a>
-                        <a href="{{ url('/gym/payments') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thanh toán</a>
+                        <a href="{{ route('gym.members.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hội viên</a>
+                        <a href="{{ route('gym.packages.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Gói tập</a>
+                        <a href="{{ route('gym.promotions.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Khuyến mãi</a>
+                        <a href="{{ route('gym.memberships.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Membership</a>
+                        <a href="{{ route('gym.payments.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thanh toán</a>
+                        <a href="{{ route('gym.schedules.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Lịch tập</a>
+                        <a href="{{ route('gym.checkin.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Check-in</a>
+                        <a href="{{ route('gym.equipment.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thiết bị</a>
+                        <a href="{{ route('community.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Cộng đồng</a>
+                        <a href="{{ route('reviews.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Đánh giá</a>
                     @elseif ($user->role === \App\Models\User::ROLE_TRAINER)
                         <a href="{{ url('/trainer/dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Tổng quan huấn luyện viên</a>
+                        <a href="{{ route('community.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Cộng đồng</a>
+                        <a href="{{ route('reviews.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Đánh giá về tôi</a>
                     @else
                         <a href="{{ url('/home') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Trang chủ</a>
-                        <a href="{{ url('/payments') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thanh toán của tôi</a>
+                        <a href="{{ route('member.qr.show') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">QR check-in của tôi</a>
+                        <a href="{{ route('member.schedules.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Đặt lớp</a>
+                        <a href="{{ route('member.bookings.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Lịch của tôi</a>
+                        @if ($currentMember)
+                            <a href="{{ route('members.measurements.index', $currentMember) }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Chỉ số cơ thể</a>
+                            <a href="{{ route('members.workout-plans.index', $currentMember) }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Kế hoạch tập</a>
+                            <a href="{{ route('members.nutrition-plans.index', $currentMember) }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Dinh dưỡng</a>
+                        @endif
+                        <a href="{{ route('member.payments.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Thanh toán của tôi</a>
+                        <a href="{{ route('community.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Cộng đồng</a>
+                        <a href="{{ route('reviews.index') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Đánh giá</a>
                     @endif
 
                     <a href="{{ route('profile.edit') }}" class="block rounded-lg px-3 py-2 hover:bg-gray-800">Hồ sơ cá nhân</a>

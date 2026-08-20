@@ -16,6 +16,10 @@ use Symfony\Component\HttpFoundation\Response;
  * middleware DUY NHẤT đã chạy trên mọi trang đã đăng nhập — tránh phải thêm
  * 1 middleware share-view riêng chỉ cho việc này. KHÔNG chịu trách nhiệm
  * chặn quyền truy cập — việc đó do RoleMiddleware và Policy đảm nhiệm.
+ *
+ * Share thêm $currentMember (hồ sơ Member của chính user, nếu role là member)
+ * để sidebar dựng được link tới measurements/workout-plans/nutrition-plans
+ * (các route này cần {member} trong URL) mà không phải query lại ở mỗi view.
  */
 class EnsureTenantAccess
 {
@@ -27,6 +31,7 @@ class EnsureTenantAccess
         $currentGym = $user?->gym_id ? Gym::find($user->gym_id) : null;
 
         View::share('currentGym', $currentGym);
+        View::share('currentMember', $user?->role === 'member' ? $user->member : null);
 
         if ($user) {
             $query = Notification::query()->where('user_id', $user->id);
