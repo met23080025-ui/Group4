@@ -29,6 +29,18 @@ class DatabaseSeeder extends Seeder
     // Mỗi Gym có đủ 4 loại gói theo thời hạn cố định (thay vì random) để demo dễ so sánh.
     private const PACKAGE_DURATIONS_DAYS = [30, 90, 180, 365];
 
+    // Dùng để sinh tên người Việt thật (thay vì "Hội viên N - TênGym") cho
+    // staff/trainer/member khi demo, để giao diện không trông như dữ liệu giả.
+    private const LAST_NAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương'];
+
+    private const MALE_MIDDLE_NAMES = ['Văn', 'Hữu', 'Đức', 'Minh', 'Quang', 'Thành', 'Công'];
+
+    private const FEMALE_MIDDLE_NAMES = ['Thị', 'Ngọc', 'Thu', 'Kim', 'Diệu', 'Bích'];
+
+    private const MALE_FIRST_NAMES = ['An', 'Bình', 'Cường', 'Dũng', 'Đạt', 'Hải', 'Hùng', 'Khang', 'Long', 'Minh', 'Nam', 'Phong', 'Quân', 'Sơn', 'Thắng', 'Tuấn', 'Việt', 'Vinh', 'Đăng', 'Kiên'];
+
+    private const FEMALE_FIRST_NAMES = ['An', 'Bình', 'Chi', 'Dung', 'Hà', 'Hoa', 'Hương', 'Lan', 'Linh', 'Mai', 'Ngọc', 'Nhung', 'Phương', 'Quỳnh', 'Thảo', 'Thư', 'Trang', 'Vân', 'Yến', 'Hạnh'];
+
     private const GYMS = [
         [
             'name' => 'FitZone Hoàn Kiếm',
@@ -54,6 +66,22 @@ class DatabaseSeeder extends Seeder
     ];
 
     /**
+     * Sinh tên người Việt "Họ Đệm Tên" xoay vòng qua các mảng ở trên theo
+     * $seed, xen kẽ nam/nữ để danh sách demo trông tự nhiên và đa dạng.
+     */
+    private function vietnameseName(int $seed): string
+    {
+        $isMale = $seed % 2 === 0;
+        $lastName = self::LAST_NAMES[$seed % count(self::LAST_NAMES)];
+        $middlePool = $isMale ? self::MALE_MIDDLE_NAMES : self::FEMALE_MIDDLE_NAMES;
+        $middleName = $middlePool[intdiv($seed, 2) % count($middlePool)];
+        $firstPool = $isMale ? self::MALE_FIRST_NAMES : self::FEMALE_FIRST_NAMES;
+        $firstName = $firstPool[intdiv($seed, 5) % count($firstPool)];
+
+        return "{$lastName} {$middleName} {$firstName}";
+    }
+
+    /**
      * Seed the application's database.
      *
      * QUAN TRỌNG: seeder chạy qua CLI, không có auth()->user() nên trait
@@ -63,6 +91,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $demoAccounts = [];
+        $nameSeed = 0;
 
         $admin = User::factory()->create([
             'gym_id' => null,
@@ -95,7 +124,8 @@ class DatabaseSeeder extends Seeder
                 $staffUser = User::factory()->create([
                     'gym_id' => $gym->id,
                     'role' => User::ROLE_STAFF,
-                    'name' => "Nhân viên {$i} - {$def['name']}",
+                    'name' => $this->vietnameseName($nameSeed++),
+                    'phone' => fake()->unique()->numerify('09########'),
                     'email' => "staff{$i}@{$def['prefix']}.test",
                 ]);
 
@@ -112,7 +142,8 @@ class DatabaseSeeder extends Seeder
                 $trainerUser = User::factory()->create([
                     'gym_id' => $gym->id,
                     'role' => User::ROLE_TRAINER,
-                    'name' => "PT {$i} - {$def['name']}",
+                    'name' => $this->vietnameseName($nameSeed++),
+                    'phone' => fake()->unique()->numerify('09########'),
                     'email' => "trainer{$i}@{$def['prefix']}.test",
                 ]);
 
@@ -128,7 +159,8 @@ class DatabaseSeeder extends Seeder
                 $memberUser = User::factory()->create([
                     'gym_id' => $gym->id,
                     'role' => User::ROLE_MEMBER,
-                    'name' => "Hội viên {$i} - {$def['name']}",
+                    'name' => $this->vietnameseName($nameSeed++),
+                    'phone' => fake()->unique()->numerify('09########'),
                     'email' => "member{$i}@{$def['prefix']}.test",
                 ]);
 

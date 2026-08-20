@@ -1,11 +1,11 @@
 <x-app-layout>
-    <x-slot name="header">Membership</x-slot>
+    <x-slot name="header">Đăng ký gói tập</x-slot>
 
     <div class="flex items-center justify-between mb-4">
-        <div class="text-sm text-gray-500">{{ $memberships->total() }} membership</div>
+        <div class="text-sm text-gray-500">{{ $memberships->total() }} đăng ký gói tập</div>
         <a href="{{ route('gym.memberships.create') }}"
-            class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700">
-            + Tạo membership
+            class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+            <x-icon name="plus" class="w-4 h-4" /> Đăng ký gói tập
         </a>
     </div>
 
@@ -41,28 +41,20 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse ($memberships as $membership)
-                    <tr>
-                        <td class="px-4 py-3">{{ $membership->member->member_code }} — {{ $membership->member->user->name }}</td>
+                    <tr class="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/40">
+                        <td class="px-4 py-3">{{ $membership->member->member_code }} - {{ $membership->member->user->name }}</td>
                         <td class="px-4 py-3">{{ $membership->package->name }}</td>
                         <td class="px-4 py-3">{{ number_format($membership->original_price, 0, ',', '.') }} đ</td>
                         <td class="px-4 py-3">{{ number_format($membership->discount_amount, 0, ',', '.') }} đ</td>
                         <td class="px-4 py-3 font-semibold">{{ number_format($membership->final_price, 0, ',', '.') }} đ</td>
-                        <td class="px-4 py-3">
-                            <span @class([
-                                'px-2 py-0.5 rounded-full text-xs font-medium',
-                                'bg-amber-100 text-amber-700' => $membership->status === 'pending',
-                                'bg-emerald-100 text-emerald-700' => $membership->status === 'active',
-                                'bg-gray-100 text-gray-600' => $membership->status === 'expired',
-                                'bg-red-100 text-red-700' => $membership->status === 'cancelled',
-                            ])>{{ $membership->status }}</span>
-                        </td>
+                        <td class="px-4 py-3"><x-status-badge :status="$membership->status" /></td>
                         <td class="px-4 py-3 text-right">
                             <a href="{{ route('gym.memberships.show', $membership) }}" class="text-indigo-600 hover:text-indigo-900">Xem</a>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-6 text-center text-gray-500">Chưa có membership nào khớp bộ lọc.</td>
+                        <td colspan="7" class="px-4 py-6 text-center text-gray-500">Chưa có đăng ký gói tập nào khớp bộ lọc.</td>
                     </tr>
                 @endforelse
             </tbody>

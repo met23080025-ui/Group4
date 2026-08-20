@@ -31,7 +31,7 @@
                         ['label' => 'Hội viên', 'icon' => 'users', 'route' => 'gym.members.index'],
                         ['label' => 'Gói tập', 'icon' => 'tag', 'route' => 'gym.packages.index'],
                         ['label' => 'Khuyến mãi', 'icon' => 'gift', 'route' => 'gym.promotions.index'],
-                        ['label' => 'Membership', 'icon' => 'credit-card', 'route' => 'gym.memberships.index'],
+                        ['label' => 'Đăng ký gói tập', 'icon' => 'credit-card', 'route' => 'gym.memberships.index'],
                         ['label' => 'Thanh toán', 'icon' => 'banknotes', 'route' => 'gym.payments.index'],
                     ],
                     'Vận hành' => [
@@ -54,7 +54,7 @@
                         ['label' => 'Hội viên', 'icon' => 'users', 'route' => 'gym.members.index'],
                         ['label' => 'Gói tập', 'icon' => 'tag', 'route' => 'gym.packages.index'],
                         ['label' => 'Khuyến mãi', 'icon' => 'gift', 'route' => 'gym.promotions.index'],
-                        ['label' => 'Membership', 'icon' => 'credit-card', 'route' => 'gym.memberships.index'],
+                        ['label' => 'Đăng ký gói tập', 'icon' => 'credit-card', 'route' => 'gym.memberships.index'],
                         ['label' => 'Thanh toán', 'icon' => 'banknotes', 'route' => 'gym.payments.index'],
                     ],
                     'Vận hành' => [
@@ -287,5 +287,7 @@
             </main>
         </div>
     </div>
+
+    @stack('scripts')
 </body>
 </html>

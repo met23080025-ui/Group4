@@ -6,10 +6,10 @@
         <x-stat-card icon="check-badge" color="emerald" label="Hội viên đang hoạt động" :value="$active_members" />
         <x-stat-card icon="exclamation-triangle" color="amber" label="Chưa có gói còn hạn" :value="$members_without_valid_membership" />
         <x-stat-card icon="banknotes" color="emerald" label="Doanh thu tháng này" :value="number_format($revenue_this_month, 0, ',', '.') . ' đ'" />
-        <x-stat-card icon="credit-card" color="indigo" label="Membership mới tháng này" :value="$new_memberships_this_month" />
+        <x-stat-card icon="credit-card" color="indigo" label="Gói mới trong tháng" :value="$new_memberships_this_month" />
         <x-stat-card icon="qr-code" color="sky" label="Check-in hôm nay" :value="$checkins_today" />
         <x-stat-card icon="clock" color="amber" label="Thanh toán chờ xác nhận" :value="$pending_payments" />
-        <x-stat-card icon="calendar" color="amber" label="Membership sắp hết hạn (7 ngày)" :value="$expiring_memberships" />
+        <x-stat-card icon="calendar" color="amber" label="Gói sắp hết hạn (7 ngày)" :value="$expiring_memberships" />
         <x-stat-card
             icon="wrench-screwdriver"
             :color="$equipment_due_for_maintenance > 0 ? 'red' : 'gray'"
@@ -18,34 +18,77 @@
         />
     </div>
 
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-            <x-icon name="calendar" class="w-5 h-5 text-gray-400" />
-            <span class="text-sm font-semibold text-gray-900">Lớp sắp tới</span>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <x-icon name="chart-bar" class="w-5 h-5 text-gray-400" />
+                <span class="text-sm font-semibold text-gray-900">Doanh thu 6 tháng gần nhất</span>
+            </div>
+            <div class="p-5">
+                <canvas id="revenueChart" height="90"></canvas>
+            </div>
         </div>
-        @if ($upcoming_schedules->isEmpty())
-            <x-empty-state
-                icon="calendar"
-                title="Chưa có lớp nào sắp diễn ra"
-                description="Tạo lịch tập mới để hội viên có thể đặt lớp."
-            >
-                <x-slot name="action">
-                    <a href="{{ route('gym.schedules.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-white text-sm font-medium hover:bg-indigo-700">
-                        <x-icon name="plus" class="w-4 h-4" /> Tạo lịch tập
-                    </a>
-                </x-slot>
-            </x-empty-state>
-        @else
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <tbody class="divide-y divide-gray-100">
-                    @foreach ($upcoming_schedules as $schedule)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-3 font-medium text-gray-900">{{ $schedule->title }}</td>
-                            <td class="px-5 py-3 text-gray-500">{{ $schedule->class_date->format('d/m/Y') }}, {{ $schedule->start_time->format('H:i') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
+
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <x-icon name="calendar" class="w-5 h-5 text-gray-400" />
+                <span class="text-sm font-semibold text-gray-900">Lớp sắp tới</span>
+            </div>
+            @if ($upcoming_schedules->isEmpty())
+                <x-empty-state
+                    icon="calendar"
+                    title="Chưa có lớp nào sắp diễn ra"
+                    description="Tạo lịch tập mới để hội viên có thể đặt lớp."
+                >
+                    <x-slot name="action">
+                        <a href="{{ route('gym.schedules.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-white text-sm font-medium hover:bg-indigo-700">
+                            <x-icon name="plus" class="w-4 h-4" /> Tạo lịch tập
+                        </a>
+                    </x-slot>
+                </x-empty-state>
+            @else
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($upcoming_schedules as $schedule)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-5 py-3 font-medium text-gray-900">{{ $schedule->title }}</td>
+                                <td class="px-5 py-3 text-gray-500">{{ $schedule->class_date->format('d/m/Y') }}, {{ $schedule->start_time->format('H:i') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
     </div>
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+        <script>
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: @json(collect($revenue_last_6_months)->pluck('label')),
+                    datasets: [{
+                        label: 'Doanh thu (đ)',
+                        data: @json(collect($revenue_last_6_months)->pluck('total')),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6,
+                        maxBarThickness: 40,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => new Intl.NumberFormat('vi-VN').format(value) + ' đ',
+                            },
+                        },
+                    },
+                },
+            });
+        </script>
+    @endpush
 </x-app-layout>

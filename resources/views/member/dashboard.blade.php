@@ -12,7 +12,7 @@
         <x-empty-state
             icon="credit-card"
             title="Tài khoản của bạn chưa có hồ sơ hội viên"
-            description="Membership, lịch tập và các tính năng khác sẽ được kích hoạt sau khi bạn chọn gói tập."
+            description="Lịch tập và các tính năng khác sẽ được kích hoạt sau khi bạn chọn gói tập."
             class="bg-white rounded-2xl border border-gray-200 shadow-sm"
         />
     @else
@@ -22,7 +22,7 @@
                     <x-icon name="credit-card" class="w-6 h-6" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-sm text-gray-500">Membership hiện tại</div>
+                    <div class="text-sm text-gray-500">Gói tập hiện tại</div>
                     @if ($stats['current_membership'])
                         <div class="mt-0.5 text-lg font-semibold text-gray-900">{{ $stats['current_membership']->package->name }}</div>
                         <div class="text-sm text-gray-600 mt-1 flex items-center gap-2">

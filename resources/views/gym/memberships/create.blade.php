@@ -1,9 +1,9 @@
 <x-app-layout>
-    <x-slot name="header">Tạo membership</x-slot>
+    <x-slot name="header">Đăng ký gói tập</x-slot>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-2xl">
         <p class="text-sm text-gray-500 mb-4">
-            Membership tạo ra sẽ ở trạng thái <strong>chờ thanh toán</strong>. Chỉ kích hoạt sau khi thanh toán được xác nhận (Ngày 2).
+            Đăng ký tạo ra sẽ ở trạng thái <strong>chờ thanh toán</strong>, chỉ kích hoạt sau khi thanh toán được xác nhận.
         </p>
 
         <form method="POST" action="{{ route('gym.memberships.store') }}">
@@ -62,7 +62,7 @@
             </div>
 
             <div class="mt-6 flex items-center gap-3">
-                <x-primary-button>Tạo membership</x-primary-button>
+                <x-primary-button>Đăng ký gói tập</x-primary-button>
                 <a href="{{ route('gym.memberships.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Hủy</a>
             </div>
         </form>

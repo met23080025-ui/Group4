@@ -57,7 +57,26 @@ class DashboardService
                 ->whereDate('end_date', '<=', $expiringLimit)
                 ->count(),
             'equipment_due_for_maintenance' => $this->equipmentDueForMaintenanceCount(),
+            'revenue_last_6_months' => $this->revenueLast6Months(),
         ];
+    }
+
+    /**
+     * Doanh thu 6 tháng gần nhất (tính cả tháng hiện tại) để vẽ biểu đồ xu
+     * hướng trên dashboard Owner — cùng nguồn Invoice::total như số
+     * "revenue_this_month" ở trên, chỉ khác là gộp theo tháng.
+     */
+    private function revenueLast6Months(): array
+    {
+        return collect(range(5, 0))
+            ->map(fn (int $i) => now()->subMonths($i)->startOfMonth())
+            ->map(fn ($month) => [
+                'label' => $month->format('m/Y'),
+                'total' => (float) Invoice::query()
+                    ->whereBetween('issued_at', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])
+                    ->sum('total'),
+            ])
+            ->all();
     }
 
     public function staffOverview(): array

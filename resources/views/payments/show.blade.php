@@ -89,7 +89,7 @@
                 <div class="mt-6 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm">
                     @if ($isStaffView)
                         <p class="mb-3">Sau khi đối chiếu sao kê ngân hàng thấy đã nhận tiền, xác nhận thanh toán bên dưới.
-                            Membership sẽ kích hoạt và hóa đơn được phát hành ngay.</p>
+                            Gói tập sẽ kích hoạt và hoá đơn được phát hành ngay.</p>
                         <form method="POST" action="{{ route('gym.payments.confirm', $payment) }}">
                             @csrf
                             <label for="note" class="block text-xs text-amber-700 mb-1">Ghi chú (tuỳ chọn)</label>
@@ -99,7 +99,7 @@
                             </button>
                         </form>
                     @else
-                        Vui lòng chuyển khoản đúng số tiền và nội dung ở trên. Sau khi Gym xác nhận, membership của bạn
+                        Vui lòng chuyển khoản đúng số tiền và nội dung ở trên. Sau khi Gym xác nhận, gói tập của bạn
                         sẽ tự động kích hoạt.
                     @endif
                 </div>
@@ -107,11 +107,11 @@
                 <div class="mt-6 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 text-sm">
                     <p>Đã xác nhận thanh toán lúc {{ $payment->paid_at?->format('d/m/Y H:i') }}
                         @if ($payment->confirmedBy)bởi {{ $payment->confirmedBy->name }}@endif.
-                        Membership đã kích hoạt.</p>
+                        Gói tập đã kích hoạt.</p>
                     @if ($payment->invoice)
-                        <p class="mt-1">Hóa đơn: <strong>{{ $payment->invoice->invoice_number }}</strong>
-                            — {{ number_format($payment->invoice->total, 0, ',', '.') }} đ
-                            — <a href="{{ route($isStaffView ? 'gym.invoices.download' : 'member.invoices.download', $payment->invoice) }}" class="underline hover:no-underline">Tải PDF</a></p>
+                        <p class="mt-1">Hoá đơn: <strong>{{ $payment->invoice->invoice_number }}</strong>,
+                            {{ number_format($payment->invoice->total, 0, ',', '.') }} đ,
+                            <a href="{{ route($isStaffView ? 'gym.invoices.download' : 'member.invoices.download', $payment->invoice) }}" class="underline hover:no-underline">Tải PDF</a></p>
                     @endif
                     @if ($payment->note)
                         <p class="mt-1 text-xs text-emerald-700">Ghi chú: {{ $payment->note }}</p>

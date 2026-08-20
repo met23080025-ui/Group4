@@ -4,7 +4,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
         <x-stat-card icon="qr-code" color="sky" label="Check-in hôm nay" :value="$checkins_today" />
         <x-stat-card icon="clock" color="amber" label="Thanh toán chờ xác nhận" :value="$pending_payments" />
-        <x-stat-card icon="calendar" color="amber" label="Membership sắp hết hạn (7 ngày)" :value="$expiring_memberships" />
+        <x-stat-card icon="calendar" color="amber" label="Gói sắp hết hạn (7 ngày)" :value="$expiring_memberships" />
         <x-stat-card
             icon="wrench-screwdriver"
             :color="$equipment_due_for_maintenance > 0 ? 'red' : 'gray'"

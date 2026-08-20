@@ -116,7 +116,7 @@
 
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
                 <h3 class="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <x-icon name="credit-card" class="w-5 h-5 text-gray-400" /> Membership hiện tại
+                    <x-icon name="credit-card" class="w-5 h-5 text-gray-400" /> Gói tập hiện tại
                 </h3>
                 @if ($currentMembership)
                     <p class="text-sm text-gray-700">
